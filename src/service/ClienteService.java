@@ -26,6 +26,28 @@ public class ClienteService {
         return clientes;
     }
 
+    public Cliente buscarPorId(Long id) {
+        return clientes.stream()
+                .filter(c -> c.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ClienteException("Cliente não encontrado."));
+    }
+
+    public Cliente atualizar(Long id, String nome, String cpf, String email, String telefone) {
+        Cliente cliente = buscarPorId(id);
+        cliente.setNome(nome);
+        cliente.setCpf(cpf);
+        cliente.setEmail(email);
+        cliente.setTelefone(telefone);
+        return cliente;
+    }
+
+    public void excluir(Long id) {
+        Cliente cliente = buscarPorId(id);
+        clientes.remove(cliente);
+    }
+
+
 
 
 }

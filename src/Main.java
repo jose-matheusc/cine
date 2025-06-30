@@ -37,6 +37,35 @@ public class Main {
                     clienteService.listar().forEach(System.out::println);
                     System.out.printf(getOpcao());
                 }
+                case 3 -> {
+                    System.out.print("ID do cliente para atualizar: ");
+                    Long id = scanner.nextLong();
+                    scanner.nextLine();
+
+                    System.out.print("Novo nome: ");
+                    String nome = scanner.nextLine();
+                    System.out.print("Novo CPF: ");
+                    String cpf = scanner.nextLine();
+                    System.out.print("Novo Email: ");
+                    String email = scanner.nextLine();
+                    System.out.print("Novo Telefone: ");
+                    String telefone = scanner.nextLine();
+
+                    clienteService.atualizar(id, nome, cpf, email, telefone);
+                    System.out.println("Cliente atualizado com sucesso.");
+                    System.out.printf(getOpcao());
+                }
+
+                case 4 -> {
+                    System.out.print("ID do cliente para excluir: ");
+                    Long id = scanner.nextLong();
+                    scanner.nextLine();
+
+                    clienteService.excluir(id);
+                    System.out.println("Cliente excluído com sucesso.");
+                    System.out.printf(getOpcao());
+                }
+
                 case 0 -> {
                     System.out.println("Saindo...");
                     return;
@@ -52,10 +81,13 @@ public class Main {
 
     private String getOpcao() {
         return """
-                Escolha uma opção:
-                1 - Adicionar Cliente
-                2 - Listar Clientes
-                0 - Sair
-                """;
+            Escolha uma opção:
+            1 - Adicionar Cliente
+            2 - Listar Clientes
+            3 - Atualizar Cliente
+            4 - Excluir Cliente
+            0 - Sair
+            """;
     }
+
 }
