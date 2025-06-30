@@ -54,4 +54,12 @@ public class Cliente {
     public void setTelefone(String telefone) {
         this.telefone = telefone;
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Cliente{id=%d, nome='%s', cpf='%s', email='%s', telefone='%s'}",
+                id, nome, cpf, email, telefone
+        );
+    }
 }
