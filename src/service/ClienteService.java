@@ -11,16 +11,17 @@ public class ClienteService {
     private final List<Cliente> clientes = new ArrayList<>();
     private Long proximoId = 1L;
 
-    public Cliente adicionar(String nome, String cpf, String email, String telefone) {
+    public void adicionar(String nome, String cpf, String email, String telefone) {
+        validarCamposObrigatorios(nome, cpf, email, telefone);
+        verificarCpfDuplicado(cpf);
         try {
             Cliente cliente = new Cliente(proximoId++, nome, cpf, email, telefone);
             clientes.add(cliente);
-            return cliente;
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new ClienteException("Erro ao adicionar cliente: " + e.getMessage());
         }
-
     }
+
 
     public List<Cliente> listar() {
         return clientes;
@@ -33,20 +34,43 @@ public class ClienteService {
                 .orElseThrow(() -> new ClienteException("Cliente não encontrado."));
     }
 
-    public Cliente atualizar(Long id, String nome, String cpf, String email, String telefone) {
+    public void atualizar(Long id, String nome, String cpf, String email, String telefone) {
+        validarCamposObrigatorios(nome, cpf, email, telefone);
         Cliente cliente = buscarPorId(id);
         cliente.setNome(nome);
         cliente.setCpf(cpf);
         cliente.setEmail(email);
         cliente.setTelefone(telefone);
-        return cliente;
     }
+
 
     public void excluir(Long id) {
         Cliente cliente = buscarPorId(id);
         clientes.remove(cliente);
     }
 
+
+    private void validarCamposObrigatorios(String nome, String cpf, String email, String telefone) {
+        if (nome == null || nome.isBlank()) {
+            throw new ClienteException("Nome é obrigatório.");
+        }
+        if (cpf == null || cpf.isBlank()) {
+            throw new ClienteException("CPF é obrigatório.");
+        }
+        if (email == null || email.isBlank()) {
+            throw new ClienteException("Email é obrigatório.");
+        }
+        if (telefone == null || telefone.isBlank()) {
+            throw new ClienteException("Telefone é obrigatório.");
+        }
+    }
+
+    private void verificarCpfDuplicado(String cpf) {
+        boolean existe = clientes.stream().anyMatch(c -> c.getCpf().equals(cpf));
+        if (existe) {
+            throw new ClienteException("Já existe um cliente com este CPF.");
+        }
+    }
 
 
 

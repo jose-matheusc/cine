@@ -31,6 +31,7 @@ public class Main {
 
                     clienteService.adicionar(nome, cpf, email, telefone);
                     System.out.println("Cliente adicionado com sucesso.");
+                    System.out.printf(getOpcao());
                 }
                 case 2 -> {
                     System.out.println("Clientes cadastrados:");
