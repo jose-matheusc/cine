@@ -1,10 +1,19 @@
+import model.Ingresso;
 import service.ClienteService;
+import service.IngressoService;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Main {
 
     private final ClienteService clienteService;
 
-    public Main() {
+    private final IngressoService ingressoService;
+
+
+    public Main(IngressoService ingressoService) {
+        this.ingressoService = ingressoService;
         this.clienteService = new ClienteService();
     }
 
@@ -67,6 +76,56 @@ public class Main {
                     System.out.printf(getOpcao());
                 }
 
+                case 5 -> {
+                    System.out.print("Filme: ");
+                    String filme = scanner.nextLine();
+
+                    String dataHoraStr = scanner.nextLine();
+                    LocalDateTime horarioSessao = LocalDateTime.parse(dataHoraStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
+                    System.out.print("Assento: ");
+                    String assento = scanner.nextLine();
+
+                    System.out.print("Meia entrada? (s/n): ");
+                    boolean meiaEntrada = scanner.nextLine().trim().equalsIgnoreCase("s");
+
+                    String documento = null;
+                    if (meiaEntrada) {
+                        System.out.print("Documento de meia-entrada: ");
+                        documento = scanner.nextLine();
+                    }
+
+                    Ingresso ingresso = ingressoService.comprarIngresso(filme, horarioSessao, assento, meiaEntrada, documento);
+                    System.out.println("Ingresso comprado com sucesso: " + ingresso);
+                }
+
+                case 6 -> {
+                    System.out.print("ID do ingresso para cancelar: ");
+                    Long ingressoId = Long.parseLong(scanner.nextLine());
+
+                    ingressoService.cancelarIngresso(ingressoId);
+                    System.out.println("Ingresso cancelado com sucesso.");
+                }
+
+                case 7 -> {
+                    System.out.print("Título do filme: ");
+                    String titulo = scanner.nextLine();
+                    var filme = ingressoService.cadastrarFilme(titulo);
+
+                    System.out.print("Data e hora da sessão (yyyy-MM-dd HH:mm): ");
+                    String dataHoraStr = scanner.nextLine();
+                    LocalDateTime horario = LocalDateTime.parse(dataHoraStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
+                    var sessao = ingressoService.cadastrarSessao(filme.getId(), horario);
+                    System.out.println("✅ Sessão cadastrada: " + sessao);
+                }
+
+                case 8 -> {
+                    System.out.println("🎞️ Sessões cadastradas:");
+                    ingressoService.listarSessoes().forEach(System.out::println);
+                }
+
+
                 case 0 -> {
                     System.out.println("Saindo...");
                     return;
@@ -76,9 +135,6 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        new Main().executar();
-    }
 
     private String getOpcao() {
         return """
@@ -87,6 +143,8 @@ public class Main {
             2 - Listar Clientes
             3 - Atualizar Cliente
             4 - Excluir Cliente
+            5 - Comprar ingresso
+            6 - Cancelar ingresso
             0 - Sair
             """;
     }
