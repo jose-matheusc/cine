@@ -1,29 +1,12 @@
 package model;
 
-import java.time.LocalDateTime;
-
 public class Ingresso {
     private Long id;
-    private String filme;
-    private LocalDateTime horarioSessao;
+    private Sessao sessao;
     private String assento;
     private boolean meiaEntrada;
     private String documentoMeiaEntrada;
     private boolean cancelado = false;
-
-    public Ingresso(Long id, String filme, LocalDateTime horarioSessao, String assento, boolean meiaEntrada, String documentoMeiaEntrada, boolean cancelado) {
-        this.id = id;
-        this.filme = filme;
-        this.horarioSessao = horarioSessao;
-        this.assento = assento;
-        this.meiaEntrada = meiaEntrada;
-        this.documentoMeiaEntrada = documentoMeiaEntrada;
-        this.cancelado = cancelado;
-    }
-
-    public Ingresso() {
-
-    }
 
     public Long getId() {
         return id;
@@ -33,20 +16,12 @@ public class Ingresso {
         this.id = id;
     }
 
-    public String getFilme() {
-        return filme;
+    public Sessao getSessao() {
+        return sessao;
     }
 
-    public void setFilme(String filme) {
-        this.filme = filme;
-    }
-
-    public LocalDateTime getHorarioSessao() {
-        return horarioSessao;
-    }
-
-    public void setHorarioSessao(LocalDateTime horarioSessao) {
-        this.horarioSessao = horarioSessao;
+    public void setSessao(Sessao sessao) {
+        this.sessao = sessao;
     }
 
     public String getAssento() {
@@ -79,5 +54,16 @@ public class Ingresso {
 
     public void setCancelado(boolean cancelado) {
         this.cancelado = cancelado;
+    }
+
+    @Override
+    public String toString() {
+        return "Ingresso [" +
+               "ID=" + id +
+               ", Sessao=" + sessao.getId() +
+               ", Filme=" + sessao.getFilme().getTitulo() +
+               ", Assento='" + assento + '\'' +
+               ", Cancelado=" + cancelado +
+               ']';
     }
 }
