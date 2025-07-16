@@ -1,20 +1,29 @@
 package model;
 
 public class Cliente extends Usuario {
+    private Long id
     private String nome;
     private String cpf;
     private String email;
     private String telefone;
 
-    public Cliente(String login, String senha, String nome, String cpf, String email, String telefone) {
+    public Cliente(String login, String senha, Long id, String nome, String cpf, String email, String telefone) {
         super(login, senha);
+        this.id = id;
         this.nome = nome;
         this.cpf = cpf;
         this.email = email;
         this.telefone = telefone;
     }
 
-    // Getters e Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id
+    }
+    
     public String getNome() { 
         return nome; 
     }
