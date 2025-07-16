@@ -5,27 +5,57 @@ import model.Filme;
 import model.Ingresso;
 import model.Sessao;
 
-import java.util.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IngressoService {
 
     private final List<Ingresso> ingressos = new ArrayList<>();
-    private Long proximoId = 1L;
-    private final List<Filme> filmes = new ArrayList<>();
     private final List<Sessao> sessoes = new ArrayList<>();
-    private Long proximoFilmeId = 1L;
+    private Long proximoIdIngresso = 1L;
     private Long proximaSessaoId = 1L;
 
-    public Ingresso comprarIngresso(String filme, LocalDateTime horarioSessao, String assento, boolean meiaEntrada, String documento) {
-        if (filme == null || filme.isBlank()) {
+    // Dependência injetada: o serviço agora USA o FilmeService, mas não gerencia filmes.
+    private final FilmeService filmeService;
+
+    public IngressoService(FilmeService filmeService) {
+        this.filmeService = filmeService;
+    }
+
+    // --- MÉTODOS DE SESSÃO ---
+
+    public Sessao cadastrarSessao(Long filmeId, LocalDateTime horario) {
+        // Busca o filme usando o serviço correto.
+        Filme filme = filmeService.buscarPorId(filmeId);
+
+        // A linha 73 original foi corrigida aqui.
+        Sessao sessao = new Sessao(proximaSessaoId++, filme, horario);
+        sessoes.add(sessao);
+        return sessao;
+    }
+
+    public List<Sessao> listarSessoes() {
+        return sessoes;
+    }
+
+    public Sessao buscarSessaoPorId(Long id) {
+        return sessoes.stream()
+                .filter(s -> s.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Sessão não encontrada."));
+    }
+
+
+    // --- MÉTODOS DE INGRESSO ---
+
+    public Ingresso comprarIngresso(String filmeTitulo, LocalDateTime horarioSessao, String assento, boolean meiaEntrada, String documento) {
+        if (filmeTitulo == null || filmeTitulo.isBlank()) {
             throw new IngressoException("Filme não pode ser vazio.");
         }
-
         if (assento == null || assento.isBlank()) {
             throw new IngressoException("Assento deve ser selecionado.");
         }
-
         if (meiaEntrada && (documento == null || documento.isBlank())) {
             throw new IngressoException("Documento obrigatório para meia-entrada.");
         }
@@ -38,15 +68,14 @@ public class IngressoService {
         }
 
         Ingresso ingresso = new Ingresso();
-        ingresso.setId(proximoId++);
-        ingresso.setFilme(filme);
+        ingresso.setId(proximoIdIngresso++);
+        ingresso.setFilme(filmeTitulo);
         ingresso.setHorarioSessao(horarioSessao);
         ingresso.setAssento(assento);
         ingresso.setMeiaEntrada(meiaEntrada);
         ingresso.setDocumentoMeiaEntrada(documento);
 
         ingressos.add(ingresso);
-
         return ingresso;
     }
 
@@ -67,37 +96,5 @@ public class IngressoService {
 
         ingresso.setCancelado(true);
         System.out.println("Ingresso cancelado. Reembolso processado.");
-    }
-
-    public Filme cadastrarFilme(String titulo) {
-        Filme filme = new Filme(proximoFilmeId++, titulo);
-        filmes.add(filme);
-        return filme;
-    }
-
-    public Sessao cadastrarSessao(Long filmeId, LocalDateTime horario) {
-        Filme filme = filmes.stream()
-                .filter(f -> f.getId().equals(filmeId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Filme não encontrado."));
-
-        Sessao sessao = new Sessao(proximaSessaoId++, filme, horario);
-        sessoes.add(sessao);
-        return sessao;
-    }
-
-    public List<Filme> listarFilmes() {
-        return filmes;
-    }
-
-    public List<Sessao> listarSessoes() {
-        return sessoes;
-    }
-
-    public Sessao buscarSessaoPorId(Long id) {
-        return sessoes.stream()
-                .filter(s -> s.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Sessão não encontrada."));
     }
 }
