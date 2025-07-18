@@ -15,29 +15,13 @@ public class Sessao {
         this.horario = horario;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public Filme getFilme() {
-        return filme;
-    }
-
-    public Sala getSala() {
-        return sala;
-    }
-
-    public LocalDateTime getHorario() {
-        return horario;
-    }
+    public Long getId() { return id; }
+    public Filme getFilme() { return filme; }
+    public Sala getSala() { return sala; }
+    public LocalDateTime getHorario() { return horario; }
 
     @Override
     public String toString() {
-        return "Sessao [" +
-               "ID=" + id +
-               ", Filme=" + filme.getTitulo() +
-               ", Sala=" + sala.getNome() +
-               ", Horário=" + horario +
-               ']';
+        return "Sessao [ID=" + id + ", Filme=" + filme.getTitulo() + ", Sala=" + sala.getNome() + ", Horário=" + horario + ']';
     }
 }

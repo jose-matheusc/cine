@@ -9,14 +9,14 @@ public class SalaService {
     private Long proximoId = 1L;
 
     public SalaService() {
-        adicionarSala("Sala 1 - 2D", "2D", 50);
-        adicionarSala("Sala 2 - 2D", "2D", 50);
-        adicionarSala("Sala 3 - 3D", "3D", 40);
-        adicionarSala("Sala 4 - IMAX", "IMAX", 60);
+        adicionarSala("Sala 1 - 2D", "2D", 50, 1.0);
+        adicionarSala("Sala 2 - 2D", "2D", 50, 1.0);
+        adicionarSala("Sala 3 - 3D", "3D", 40, 1.2);
+        adicionarSala("Sala 4 - IMAX", "IMAX", 60, 1.5);
     }
 
-    private void adicionarSala(String nome, String tipo, int capacidade) {
-        Sala sala = new Sala(proximoId++, nome, tipo, capacidade);
+    private void adicionarSala(String nome, String tipo, int capacidade, double fatorPreco) {
+        Sala sala = new Sala(proximoId++, nome, tipo, capacidade, fatorPreco);
         this.salas.add(sala);
     }
 

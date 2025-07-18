@@ -5,10 +5,15 @@ import model.Filme;
 import model.Ingresso;
 import model.Sessao;
 import model.Sala;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class IngressoService {
+
+    private static final double PRECO_BASE_INTEIRA = 30.00;
 
     private final List<Ingresso> ingressos = new ArrayList<>();
     private Long proximoIdIngresso = 1L;
@@ -23,28 +28,25 @@ public class IngressoService {
         this.salaService = salaService;
     }
 
-    public Sessao cadastrarSessao(Long filmeId, Long salaId, LocalDateTime horario) {
-        Filme filme = filmeService.buscarPorId(filmeId);
-        Sala sala = salaService.buscarPorId(salaId);
+    private double calcularValorIngresso(Sessao sessao, boolean meiaEntrada) {
+        double valor = PRECO_BASE_INTEIRA;
+        valor = valor * sessao.getSala().getFatorPreco();
 
-        Sessao sessao = new Sessao(proximaSessaoId++, filme, sala, horario);
-        sessoes.add(sessao);
-        return sessao;
+        if (meiaEntrada) {
+            valor = valor / 2;
+        }
+        return valor;
     }
-
-    public Ingresso comprarIngresso(Long sessaoId, String assento, boolean meiaEntrada, String documento) {
-        Sessao sessao = buscarSessaoPorId(sessaoId);
+    
+    public Ingresso comprarIngresso(Sessao sessao, String assento, boolean meiaEntrada, String documento) {
         Sala sala = sessao.getSala();
 
         if (!sala.verificarDisponibilidade(assento)) {
             throw new IngressoException("Assento " + assento + " já está ocupado para esta sessão.");
         }
 
-        if (meiaEntrada && (documento == null || documento.isBlank())) {
-            throw new IngressoException("Documento obrigatório para meia-entrada.");
-        }
-        
         sala.ocuparAssento(assento);
+        double valorFinal = calcularValorIngresso(sessao, meiaEntrada);
 
         Ingresso ingresso = new Ingresso();
         ingresso.setId(proximoIdIngresso++);
@@ -52,7 +54,9 @@ public class IngressoService {
         ingresso.setAssento(assento);
         ingresso.setMeiaEntrada(meiaEntrada);
         ingresso.setDocumentoMeiaEntrada(documento);
-        
+        ingresso.setValor(valorFinal);
+        ingresso.setQrCode(UUID.randomUUID().toString().substring(0, 8));
+
         ingressos.add(ingresso);
         return ingresso;
     }
@@ -62,7 +66,11 @@ public class IngressoService {
                 .filter(i -> i.getId().equals(ingressoId))
                 .findFirst()
                 .orElseThrow(() -> new IngressoException("Ingresso não encontrado."));
-        
+
+        if (ingresso.isCancelado()) {
+            throw new IngressoException("Ingresso já está cancelado.");
+        }
+
         LocalDateTime agora = LocalDateTime.now();
         if (agora.isAfter(ingresso.getSessao().getHorario().minusHours(2))) {
             throw new IngressoException("Cancelamento só é permitido até 2 horas antes da sessão.");
@@ -70,9 +78,25 @@ public class IngressoService {
 
         ingresso.getSessao().getSala().liberarAssento(ingresso.getAssento());
         ingresso.setCancelado(true);
-        System.out.println("Ingresso cancelado. Reembolso processado.");
+        System.out.println("✅ Ingresso cancelado. Reembolso de R$ " + String.format("%.2f", ingresso.getValor()) + " processado.");
     }
     
+    public Ingresso validarQrCode(String qrCode) {
+        return ingressos.stream()
+            .filter(i -> i.getQrCode().equals(qrCode) && !i.isCancelado())
+            .findFirst()
+            .orElse(null);
+    }
+
+    public Sessao cadastrarSessao(Long filmeId, Long salaId, LocalDateTime horario) {
+        Filme filme = filmeService.buscarPorId(filmeId);
+        Sala sala = salaService.buscarPorId(salaId);
+
+        Sessao sessao = new Sessao(proximaSessaoId++, filme, sala, horario);
+        sessoes.add(sessao);
+        return sessao;
+    }
+
     public List<Sessao> listarSessoes() {
         return sessoes;
     }
@@ -82,5 +106,11 @@ public class IngressoService {
                 .filter(s -> s.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Sessão não encontrada."));
+    }
+    
+    public List<Sessao> buscarSessoesPorFilmeId(Long filmeId) {
+        return sessoes.stream()
+                .filter(s -> s.getFilme().getId().equals(filmeId))
+                .collect(Collectors.toList());
     }
 }

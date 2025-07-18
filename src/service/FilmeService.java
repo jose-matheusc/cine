@@ -10,14 +10,21 @@ public class FilmeService {
     private final List<Filme> filmes = new ArrayList<>();
     private Long proximoId = 1L;
 
-    public Filme adicionar(String titulo, String sinopse, int duracao, String genero, int classificacao) {
+    public void adicionar(String titulo, String sinopse, int duracao, String genero, int classificacao) {
+        Filme filme = criarFilme(titulo, sinopse, duracao, genero, classificacao);
+        System.out.println("✅ Filme '" + titulo + "' adicionado com sucesso!");
+    }
+
+    public void adicionarInicial(String titulo, String sinopse, int duracao, String genero, int classificacao) {
+        criarFilme(titulo, sinopse, duracao, genero, classificacao);
+    }
+    
+    private Filme criarFilme(String titulo, String sinopse, int duracao, String genero, int classificacao) {
         if (titulo == null || titulo.isBlank()) {
             throw new FilmeException("O título do filme é obrigatório.");
         }
-
         Filme filme = new Filme(proximoId++, titulo, sinopse, duracao, genero, classificacao);
         filmes.add(filme);
-        System.out.println("✅ Filme '" + titulo + "' adicionado com sucesso!");
         return filme;
     }
 
