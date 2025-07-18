@@ -2,26 +2,19 @@ package service;
 
 import exception.ClienteException;
 import model.Cliente;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClienteService {
-
     private final List<Cliente> clientes = new ArrayList<>();
     private Long proximoId = 1L;
 
-    public void adicionar(String nome, String cpf, String email, String telefone) {
+    public void adicionar(String nome, String cpf, String email, String telefone, int idade) {
         validarCamposObrigatorios(nome, cpf, email, telefone);
         verificarCpfDuplicado(cpf);
-        try {
-            // Linha 18 corrigida: agora cria o Cliente como esperado
-            Cliente cliente = new Cliente(proximoId++, nome, cpf, email, telefone);
-            clientes.add(cliente);
-            System.out.println("✅ Cliente adicionado com sucesso.");
-        } catch (Exception e) {
-            throw new ClienteException("Erro ao adicionar cliente: " + e.getMessage());
-        }
+        Cliente cliente = new Cliente(proximoId++, nome, cpf, email, telefone, idade);
+        clientes.add(cliente);
+        System.out.println("✅ Cliente adicionado com sucesso.");
     }
 
     public List<Cliente> listar() {
@@ -44,31 +37,18 @@ public class ClienteService {
         cliente.setTelefone(telefone);
         System.out.println("✅ Cliente atualizado com sucesso.");
     }
-
     public void excluir(Long id) {
-        Cliente cliente = buscarPorId(id);
-        clientes.remove(cliente);
+        clientes.remove(buscarPorId(id));
         System.out.println("✅ Cliente excluído com sucesso.");
     }
 
-    private void validarCamposObrigatorios(String nome, String cpf, String email, String telefone) {
-        if (nome == null || nome.isBlank()) {
-            throw new ClienteException("Nome é obrigatório.");
-        }
-        if (cpf == null || cpf.isBlank()) {
-            throw new ClienteException("CPF é obrigatório.");
-        }
-        if (email == null || email.isBlank()) {
-            throw new ClienteException("Email é obrigatório.");
-        }
-        if (telefone == null || telefone.isBlank()) {
-            throw new ClienteException("Telefone é obrigatório.");
+    private void validarCamposObrigatorios(String n, String c, String e, String t) {
+        if (n == null || n.isBlank() || c == null || c.isBlank() || e == null || e.isBlank() || t == null || t.isBlank()) {
+            throw new ClienteException("Todos os campos são obrigatórios.");
         }
     }
-
     private void verificarCpfDuplicado(String cpf) {
-        boolean existe = clientes.stream().anyMatch(c -> c.getCpf().equals(cpf));
-        if (existe) {
+        if (clientes.stream().anyMatch(c -> c.getCpf().equals(cpf))) {
             throw new ClienteException("Já existe um cliente com este CPF.");
         }
     }
