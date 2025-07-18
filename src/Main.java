@@ -1,14 +1,23 @@
-import model.Filme;
+import model.Administrador;
+import model.Cliente;
 import model.Ingresso;
+import model.Usuario;
+import model.Venda;
+import service.AuthService;
+import service.ProdutoService;
+import service.VendaService;
+import model.Filme;
 import model.Sessao;
 import service.ClienteService;
 import service.FilmeService;
 import service.IngressoService;
+import service.RelatorioService;
 import service.SalaService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -17,51 +26,337 @@ public class Main {
     private final FilmeService filmeService;
     private final SalaService salaService;
     private final IngressoService ingressoService;
+    private final ProdutoService produtoService;
+    private final VendaService vendaService;
+    private final RelatorioService relatorioService;
+    private final AuthService authService;
     private final Scanner scanner;
+    private Usuario usuarioLogado;
+
+    public static void main(String[] args) {
+        Main app = new Main();
+        app.executar();
+    }
 
     public Main() {
         this.clienteService = new ClienteService();
         this.filmeService = new FilmeService();
         this.salaService = new SalaService();
         this.ingressoService = new IngressoService(filmeService, salaService);
+        this.produtoService = new ProdutoService();
+        this.vendaService = new VendaService(ingressoService, produtoService, clienteService);
+        this.relatorioService = new RelatorioService(vendaService);
+        this.authService = new AuthService(clienteService);
         this.scanner = new Scanner(System.in);
+        
+        popularDadosIniciais();
+    }
+
+    private void popularDadosIniciais() {
+        filmeService.adicionarInicial("Divertidamente 2", "Novas emoções chegam à mente da adolescente Riley.", 96, "Animação", 0);
+        filmeService.adicionarInicial("O Auto da Compadecida 2", "As aventuras de João Grilo e Chicó continuam.", 120, "Comédia", 12);
+        filmeService.adicionarInicial("Bad Boys: Até o Fim", "Os detetives Mike Lowrey e Marcus Burnett investigam a corrupção.", 115, "Ação", 16);
+        filmeService.adicionarInicial("Planeta dos Macacos: O Reinado", "Muitas gerações após o reinado de César, os macacos são a espécie dominante.", 145, "Ficção Científica", 14);
+        
+        ingressoService.cadastrarSessao(1L, 1L, LocalDateTime.now().plusHours(2));
+        ingressoService.cadastrarSessao(1L, 2L, LocalDateTime.now().plusHours(4));
+        ingressoService.cadastrarSessao(2L, 3L, LocalDateTime.now().plusHours(3));
+        ingressoService.cadastrarSessao(3L, 4L, LocalDateTime.now().plusHours(1));
+        ingressoService.cadastrarSessao(4L, 1L, LocalDateTime.now().plusHours(5));
     }
 
     public void executar() {
-        int opcao;
-        do {
-            exibirMenuPrincipal();
-            opcao = scanner.nextInt();
-            scanner.nextLine();
+        System.out.println("Bem-vindo ao CINE-SYSTEM!");
 
-            // SWITCH CORRIGIDO PARA VERSÕES MAIS ANTIGAS DO JAVA
-            switch (opcao) {
-                case 1:
-                    gerenciarClientes();
-                    break;
-                case 2:
-                    gerenciarFilmes();
-                    break;
-                case 3:
-                    gerenciarIngressosSessoes();
-                    break;
-                case 0:
-                    System.out.println("✅ Saindo do sistema...");
-                    break;
-                default:
-                    System.out.println("❌ Opção inválida. Tente novamente.");
-                    break;
+        while (true) {
+            if (usuarioLogado == null) {
+                telaInicialLogin();
+            } else {
+                System.out.println("\n✅ Login realizado com sucesso! Bem-vindo, " + usuarioLogado.getLogin());
+                if (usuarioLogado instanceof Administrador) {
+                    menuAdministrador();
+                } else {
+                    menuCliente();
+                }
+                if (usuarioLogado == null) {
+                    System.out.println("✅ Logout realizado com sucesso.");
+                }
+            }
+        }
+    }
+    
+    private void telaInicialLogin() {
+        System.out.println("\n--- TELA INICIAL ---");
+        System.out.println("1 - Fazer Login");
+        System.out.println("2 - Criar Conta de Cliente");
+        System.out.println("0 - Sair do Sistema");
+        System.out.print("Escolha uma opção: ");
+        int opcao = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (opcao) {
+            case 1:
+                fazerLogin();
+                break;
+            case 2:
+                criarContaCliente();
+                break;
+            case 0:
+                System.out.println("Saindo...");
+                System.exit(0);
+                break;
+            default:
+                System.out.println("❌ Opção inválida.");
+                break;
+        }
+    }
+
+    private void fazerLogin() {
+        System.out.println("\n--- TELA DE LOGIN ---");
+        System.out.print("Login (use 'admin' ou email do cliente): ");
+        String login = scanner.nextLine();
+        System.out.print("Senha (use 'admin' ou CPF do cliente): ");
+        String senha = scanner.nextLine();
+
+        usuarioLogado = authService.login(login, senha);
+
+        if (usuarioLogado == null) {
+            System.out.println("❌ Login ou senha inválidos. Tente novamente.");
+        }
+    }
+
+    private void criarContaCliente() {
+        try {
+            System.out.println("\n--- CRIAR CONTA DE CLIENTE ---");
+            System.out.print("Nome: ");
+            String nome = scanner.nextLine();
+            System.out.print("CPF (será a senha): ");
+            String cpf = scanner.nextLine();
+            System.out.print("Email (será o login): ");
+            String email = scanner.nextLine();
+            System.out.print("Telefone: ");
+            String telefone = scanner.nextLine();
+            System.out.print("Idade: ");
+            int idade = scanner.nextInt(); scanner.nextLine();
+            clienteService.adicionar(nome, cpf, email, telefone, idade);
+            System.out.println("✅ Conta criada com sucesso! Por favor, faça o login.");
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao criar conta: " + e.getMessage());
+        }
+    }
+
+    private void menuCliente() {
+        int opcao = -1;
+        do {
+            System.out.println("\n--- MENU DO CLIENTE ---");
+            System.out.println("1 - Ver Filmes em Cartaz");
+            System.out.println("2 - Cancelar Ingresso");
+            System.out.println("0 - Deslogar");
+            System.out.print("Escolha uma opção: ");
+            try {
+                opcao = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (opcao) {
+                    case 1:
+                        menuCartaz();
+                        break;
+                    case 2:
+                        cancelarIngresso();
+                        break;
+                    case 0:
+                        usuarioLogado = null;
+                        break;
+                    default:
+                        System.out.println("❌ Opção inválida.");
+                        break;
+                }
+            } catch (Exception e) {
+                System.out.println("❌ Entrada inválida. Por favor, digite um número.");
+                scanner.nextLine();
+                opcao = -1;
+            }
+        } while (opcao != 0);
+    }
+    
+    private void menuCartaz() {
+        System.out.println("\n--- FILMES EM CARTAZ ---");
+        filmeService.listar().forEach(filme -> {
+            System.out.println("ID: " + filme.getId() + " - " + filme.getTitulo());
+        });
+        System.out.print("\nDigite o ID do filme para ver detalhes ou 'V' para voltar: ");
+        String escolha = scanner.nextLine().toUpperCase();
+
+        if (escolha.equals("V")) {
+            return;
+        }
+
+        try {
+            Long filmeId = Long.parseLong(escolha);
+            detalhesFilmeECompra(filmeId);
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Opção inválida.");
+        }
+    }
+
+    private void detalhesFilmeECompra(Long filmeId) {
+        try {
+            Filme filme = filmeService.buscarPorId(filmeId);
+            System.out.println("\n--- DETALHES DO FILME ---");
+            System.out.println("Título: " + filme.getTitulo());
+            System.out.println("Sinopse: " + filme.getSinopse());
+            System.out.println("Classificação: " + filme.getClassificacaoIndicativa() + " anos");
+
+            List<Sessao> sessoes = ingressoService.buscarSessoesPorFilmeId(filmeId);
+            if (sessoes.isEmpty()) {
+                System.out.println("Não há sessões disponíveis para este filme no momento.");
+                return;
+            }
+            
+            System.out.println("\n--- Horários Disponíveis ---");
+            sessoes.forEach(sessao -> {
+                System.out.println("Sessão ID: " + sessao.getId() + " | Horário: " + sessao.getHorario().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")) + " | Sala: " + sessao.getSala().getNome());
+            });
+
+            System.out.print("\nDeseja comprar ingresso para uma dessas sessões? (S/N): ");
+            if (scanner.nextLine().equalsIgnoreCase("S")) {
+                realizarVenda();
+            }
+            
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao buscar detalhes: " + e.getMessage());
+        }
+    }
+
+    private void realizarVenda() {
+        try {
+            Venda novaVenda = vendaService.criarVenda(((Cliente) usuarioLogado).getId());
+            System.out.println("Iniciando nova venda para o cliente: " + ((Cliente) usuarioLogado).getNome());
+
+            System.out.print("\nDigite o ID da sessão desejada: ");
+            Long sessaoId = scanner.nextLong(); scanner.nextLine();
+            Sessao sessaoEscolhida = ingressoService.buscarSessaoPorId(sessaoId);
+
+            System.out.print("Quantos ingressos deseja comprar? ");
+            int quantidadeIngressos = scanner.nextInt(); scanner.nextLine();
+
+            for (int i = 1; i <= quantidadeIngressos; i++) {
+                System.out.println("\n--- INGRESSO " + i + " de " + quantidadeIngressos + " ---");
+                String assento;
+                while (true) {
+                    System.out.println("\n--- MAPA DE ASSENTOS ---");
+                    System.out.println(sessaoEscolhida.getSala().getMapaDeAssentos());
+                    System.out.print("Escolha um assento vago (Ex: A1): ");
+                    assento = scanner.nextLine().toUpperCase();
+
+                    if (sessaoEscolhida.getSala().verificarDisponibilidade(assento)) {
+                        break;
+                    } else {
+                        System.out.println("❌ Assento ocupado ou inválido. Por favor, escolha outro.");
+                    }
+                }
+
+                System.out.print("Meia entrada? (s/n): ");
+                boolean meia = scanner.nextLine().equalsIgnoreCase("s");
+                String doc = null;
+                if(meia) {
+                    System.out.print("Documento de meia-entrada: ");
+                    doc = scanner.nextLine();
+                }
+
+                vendaService.adicionarIngressoNaVenda(novaVenda, sessaoId, assento, meia, doc);
+                System.out.println("✅ Ingresso adicionado!");
+            }
+
+            System.out.print("\nDeseja comprar produtos de conveniência? (S/N): ");
+            if (scanner.nextLine().equalsIgnoreCase("S")) {
+                String continuar;
+                do {
+                    System.out.println("\n--- Produtos Disponíveis ---");
+                    produtoService.listarProdutos().forEach(System.out::println);
+                    System.out.print("ID do produto: ");
+                    Long produtoId = scanner.nextLong(); scanner.nextLine();
+                    System.out.print("Quantidade: ");
+                    int quantidade = scanner.nextInt(); scanner.nextLine();
+
+                    vendaService.adicionarProdutoNaVenda(novaVenda, produtoId, quantidade);
+                    System.out.println("✅ Produto(s) adicionado(s)!");
+
+                    System.out.print("\nDeseja adicionar mais algum produto? (s/n): ");
+                    continuar = scanner.nextLine();
+                } while (continuar.equalsIgnoreCase("s"));
+            }
+
+            System.out.println("\n--- PAGAMENTO ---");
+            System.out.println("Valor total da compra: R$ " + String.format("%.2f", novaVenda.getValorTotal()));
+            vendaService.finalizarVenda(novaVenda);
+
+        } catch (Exception e) {
+            System.out.println("❌ Erro durante a venda: " + e.getMessage());
+        }
+    }
+
+    private void menuAdministrador() {
+        int opcao = -1;
+        do {
+            System.out.println("\n--- PAINEL DO ADMINISTRADOR ---");
+            System.out.println("1 - Gerenciar Clientes");
+            System.out.println("2 - Gerenciar Filmes");
+            System.out.println("3 - Gerenciar Sessões");
+            System.out.println("4 - Gerar Relatórios");
+            System.out.println("5 - Validar QR Code de Ingresso");
+            System.out.println("0 - Deslogar");
+            System.out.print("Escolha uma opção: ");
+            try {
+                opcao = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (opcao) {
+                    case 1: gerenciarClientes(); break;
+                    case 2: gerenciarFilmes(); break;
+                    case 3: gerenciarSessoes(); break;
+                    case 4: gerarRelatorios(); break;
+                    case 5: validarIngresso(); break;
+                    case 0:
+                        usuarioLogado = null;
+                        break;
+                    default: System.out.println("❌ Opção inválida."); break;
+                }
+            } catch (Exception e) {
+                System.out.println("❌ Entrada inválida. Por favor, digite um número.");
+                scanner.nextLine();
+                opcao = -1;
             }
         } while (opcao != 0);
     }
 
-    private void exibirMenuPrincipal() {
-        System.out.println("\n--- CINE-SYSTEM ---");
-        System.out.println("1 - Gerenciar Clientes");
-        System.out.println("2 - Gerenciar Filmes");
-        System.out.println("3 - Ingressos e Sessões");
-        System.out.println("0 - Sair");
-        System.out.print("Escolha uma opção: ");
+    private void cancelarIngresso() {
+        try {
+            System.out.println("\n-- Cancelar Ingresso --");
+            System.out.print("Digite o ID do ingresso para cancelar: ");
+            Long ingressoId = scanner.nextLong();
+            scanner.nextLine();
+            ingressoService.cancelarIngresso(ingressoId);
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao cancelar ingresso: " + e.getMessage());
+        }
+    }
+    
+    private void validarIngresso() {
+        System.out.println("\n-- Validação de Ingresso --");
+        System.out.print("Digite o QR Code do ingresso: ");
+        String qrCode = scanner.nextLine();
+
+        Ingresso ingresso = ingressoService.validarQrCode(qrCode);
+
+        if (ingresso != null) {
+            System.out.println("✅ INGRESSO VÁLIDO!");
+            System.out.println("Filme: " + ingresso.getSessao().getFilme().getTitulo());
+            System.out.println("Assento: " + ingresso.getAssento());
+            System.out.println("Acesso Liberado.");
+        } else {
+            System.out.println("❌ INGRESSO INVÁLIDO OU JÁ UTILIZADO.");
+        }
     }
 
     private void gerenciarClientes() {
@@ -76,15 +371,7 @@ public class Main {
 
         switch (opcao) {
             case 1: {
-                System.out.print("Nome: ");
-                String nome = scanner.nextLine();
-                System.out.print("CPF: ");
-                String cpf = scanner.nextLine();
-                System.out.print("Email: ");
-                String email = scanner.nextLine();
-                System.out.print("Telefone: ");
-                String telefone = scanner.nextLine();
-                clienteService.adicionar(nome, cpf, email, telefone);
+                criarContaCliente();
                 break;
             }
             case 2: {
@@ -119,7 +406,7 @@ public class Main {
                 break;
         }
     }
-    
+
     private void gerenciarFilmes() {
         System.out.println("\n-- Gerenciar Filmes --");
         System.out.println("1 - Adicionar Filme");
@@ -184,59 +471,16 @@ public class Main {
         }
     }
 
-    private void gerenciarIngressosSessoes() {
-        System.out.println("\n-- Ingressos e Sessões --");
-        System.out.println("1 - Comprar Ingresso");
-        System.out.println("2 - Cancelar Ingresso");
-        System.out.println("3 - Cadastrar Sessão");
-        System.out.println("4 - Listar Sessões");
+    private void gerenciarSessoes() {
+        System.out.println("\n-- Gerenciar Sessões --");
+        System.out.println("1 - Cadastrar Nova Sessão");
+        System.out.println("2 - Listar Sessões Cadastradas");
         System.out.print("Escolha uma opção: ");
         int opcao = scanner.nextInt();
         scanner.nextLine();
 
         switch(opcao) {
             case 1: {
-                try {
-                    System.out.println("\n--- Sessões Disponíveis ---");
-                    ingressoService.listarSessoes().forEach(System.out::println);
-                    System.out.print("Escolha o ID da sessão para comprar o ingresso: ");
-                    Long sessaoId = scanner.nextLong();
-                    scanner.nextLine();
-
-                    Sessao sessaoEscolhida = ingressoService.buscarSessaoPorId(sessaoId);
-                    System.out.println("Sala: " + sessaoEscolhida.getSala().getNome() + " - Assentos disponíveis: " + (sessaoEscolhida.getSala().getCapacidade() - sessaoEscolhida.getSala().getAssentosOcupados()));
-                    
-                    System.out.print("Assento (Ex: A1, A2): ");
-                    String assento = scanner.nextLine();
-
-                    System.out.print("Meia entrada? (s/n): ");
-                    boolean meiaEntrada = scanner.nextLine().trim().equalsIgnoreCase("s");
-
-                    String documento = null;
-                    if (meiaEntrada) {
-                        System.out.print("Documento de meia-entrada: ");
-                        documento = scanner.nextLine();
-                    }
-
-                    Ingresso ingresso = ingressoService.comprarIngresso(sessaoId, assento, meiaEntrada, documento);
-                    System.out.println("✅ Ingresso comprado com sucesso: " + ingresso);
-                } catch (Exception e) {
-                    System.out.println("❌ Erro: " + e.getMessage());
-                }
-                break;
-            }
-            case 2: {
-                try {
-                    System.out.print("ID do ingresso para cancelar: ");
-                    Long ingressoId = scanner.nextLong();
-                    scanner.nextLine();
-                    ingressoService.cancelarIngresso(ingressoId);
-                } catch (Exception e) {
-                    System.out.println("❌ Erro: " + e.getMessage());
-                }
-                break;
-            }
-            case 3: {
                 try {
                     System.out.println("\n--- Salas Disponíveis ---");
                     salaService.listarSalas().forEach(System.out::println);
@@ -256,18 +500,41 @@ public class Main {
 
                     Sessao sessao = ingressoService.cadastrarSessao(filmeId, salaId, horario);
                     System.out.println("✅ Sessão cadastrada: " + sessao);
-                } catch (DateTimeParseException e) {
-                    System.out.println("❌ Formato de data e hora inválido. Use yyyy-MM-dd HH:mm");
                 } catch (Exception e) {
                     System.out.println("❌ Erro: " + e.getMessage());
                 }
                 break;
             }
-            case 4: {
+            case 2: {
                 System.out.println("\n--- Sessões Cadastradas ---");
                 ingressoService.listarSessoes().forEach(System.out::println);
                 break;
             }
+            default:
+                System.out.println("❌ Opção inválida.");
+                break;
+        }
+    }
+
+    private void gerarRelatorios() {
+        System.out.println("\n-- Menu de Relatórios --");
+        System.out.println("1 - Relatório de Vendas por Filme");
+        System.out.println("2 - Relatório de Vendas de Produtos");
+        System.out.println("3 - Relatório de Receita Total");
+        System.out.print("Escolha um relatório para gerar: ");
+        int opcao = scanner.nextInt();
+        scanner.nextLine();
+
+        switch(opcao) {
+            case 1:
+                relatorioService.gerarRelatorioVendasPorFilme();
+                break;
+            case 2:
+                relatorioService.gerarRelatorioVendasDeProdutos();
+                break;
+            case 3:
+                relatorioService.gerarRelatorioReceitaTotal();
+                break;
             default:
                 System.out.println("❌ Opção inválida.");
                 break;
