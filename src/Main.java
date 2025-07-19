@@ -7,6 +7,12 @@ import java.time.format.DateTimeFormatter;
 
 public class Main {
 
+    public static void main(String[] args) {
+        IngressoService ingressoService = new IngressoService();
+        Main main = new Main(ingressoService);
+        main.executar();
+    }
+
     private final ClienteService clienteService;
 
     private final IngressoService ingressoService;
@@ -29,6 +35,10 @@ public class Main {
 
             switch (opcao) {
                 case 1 -> {
+                    System.out.print("Login: ");
+                    String login = scanner.nextLine();
+                    System.out.print("Senha: ");
+                    String senha = scanner.nextLine();
                     System.out.print("Nome: ");
                     String nome = scanner.nextLine();
                     System.out.print("CPF: ");
@@ -38,7 +48,7 @@ public class Main {
                     System.out.print("Telefone: ");
                     String telefone = scanner.nextLine();
 
-                    clienteService.adicionar(nome, cpf, email, telefone);
+                    clienteService.adicionar(login, senha, nome, cpf, email, telefone);
                     System.out.println("Cliente adicionado com sucesso.");
                     System.out.printf(getOpcao());
                 }

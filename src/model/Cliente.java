@@ -1,7 +1,7 @@
 package model;
 
 public class Cliente extends Usuario {
-    private Long id
+    private Long id;
     private String nome;
     private String cpf;
     private String email;
@@ -21,7 +21,7 @@ public class Cliente extends Usuario {
     }
 
     public void setId(Long id) {
-        this.id = id
+        this.id = id;
     }
     
     public String getNome() { 

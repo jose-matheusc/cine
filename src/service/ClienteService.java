@@ -11,11 +11,11 @@ public class ClienteService {
     private final List<Cliente> clientes = new ArrayList<>();
     private Long proximoId = 1L;
 
-    public void adicionar(String nome, String cpf, String email, String telefone) {
+    public void adicionar(String nome, String cpf, String email, String telefone, String login, String senha) {
         validarCamposObrigatorios(nome, cpf, email, telefone);
         verificarCpfDuplicado(cpf);
         try {
-            Cliente cliente = new Cliente(proximoId++, nome, cpf, email, telefone);
+            Cliente cliente = new Cliente(login, senha, proximoId++, nome, cpf, email, telefone);
             clientes.add(cliente);
         } catch (Exception e) {
             throw new ClienteException("Erro ao adicionar cliente: " + e.getMessage());
