@@ -48,13 +48,13 @@ public class Main {
                     System.out.print("Telefone: ");
                     String telefone = scanner.nextLine();
 
-                    clienteService.adicionar(login, senha, nome, cpf, email, telefone);
+//                    clienteService.adicionar(login, senha, nome, cpf, email, telefone);
                     System.out.println("Cliente adicionado com sucesso.");
                     System.out.printf(getOpcao());
                 }
                 case 2 -> {
                     System.out.println("Clientes cadastrados:");
-                    clienteService.listar().forEach(System.out::println);
+//                    clienteService.listar().forEach(System.out::println);
                     System.out.printf(getOpcao());
                 }
                 case 3 -> {
@@ -71,7 +71,7 @@ public class Main {
                     System.out.print("Novo Telefone: ");
                     String telefone = scanner.nextLine();
 
-                    clienteService.atualizar(id, nome, cpf, email, telefone);
+//                    clienteService.atualizar(id, nome, cpf, email, telefone);
                     System.out.println("Cliente atualizado com sucesso.");
                     System.out.printf(getOpcao());
                 }
@@ -81,7 +81,7 @@ public class Main {
                     Long id = scanner.nextLong();
                     scanner.nextLine();
 
-                    clienteService.excluir(id);
+//                    clienteService.excluir(id);
                     System.out.println("Cliente excluído com sucesso.");
                     System.out.printf(getOpcao());
                 }

@@ -29,7 +29,7 @@ public class AdicionarClienteTela {
 
         Button btnSalvar = new Button("Salvar");
 
-        btnSalvar.setOnAction(e -> {
+        btnSalvar.setOnAction(_ -> {
             clienteService.adicionar(
                     loginField.getText(),
                     senhaField.getText(),

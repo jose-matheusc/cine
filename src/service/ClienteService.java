@@ -1,34 +1,70 @@
 package service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import exception.ClienteException;
 import model.Cliente;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClienteService {
 
-    private final List<Cliente> clientes = new ArrayList<>();
-    private Long proximoId = 1L;
+    private Integer proximoId = 1;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final File arquivo = new File("src/repository/Cliente.json");
+
+    private List<Cliente> pegarClientes() {
+        try {
+            return objectMapper.readValue(arquivo, new TypeReference<List<Cliente>>() {});
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public void adicionar(String nome, String cpf, String email, String telefone, String login, String senha) {
         validarCamposObrigatorios(nome, cpf, email, telefone);
         verificarCpfDuplicado(cpf);
         try {
-            Cliente cliente = new Cliente(login, senha, proximoId++, nome, cpf, email, telefone);
+            List<Cliente> clientes = pegarClientes();
+            Long idUltimoCliente = clientes.getLast().getId();
+            Cliente cliente = new Cliente(login, senha, ++idUltimoCliente, nome, cpf, email, telefone);
             clientes.add(cliente);
+            salvarClientesEmArquivo(clientes);
         } catch (Exception e) {
             throw new ClienteException("Erro ao adicionar cliente: " + e.getMessage());
         }
     }
 
+    private void salvarClientesEmArquivo(List<Cliente> clientes) {
+        try {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(arquivo, clientes);
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar clientes no arquivo: " + e.getMessage());
+        }
+    }
+
+    private List<Cliente> carregarClientesDoArquivo() {
+        if (!arquivo.exists()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(arquivo, new TypeReference<List<Cliente>>() {});
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao carregar clientes do arquivo: " + e.getMessage());
+        }
+    }
+
 
     public List<Cliente> listar() {
-        return clientes;
+        return carregarClientesDoArquivo();
     }
 
     public Cliente buscarPorId(Long id) {
-        return clientes.stream()
+        return pegarClientes().stream()
                 .filter(c -> c.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new ClienteException("Cliente não encontrado."));
@@ -46,7 +82,7 @@ public class ClienteService {
 
     public void excluir(Long id) {
         Cliente cliente = buscarPorId(id);
-        clientes.remove(cliente);
+        pegarClientes().remove(cliente);
     }
 
 
@@ -66,7 +102,7 @@ public class ClienteService {
     }
 
     private void verificarCpfDuplicado(String cpf) {
-        boolean existe = clientes.stream().anyMatch(c -> c.getCpf().equals(cpf));
+        boolean existe = pegarClientes().stream().anyMatch(c -> c.getCpf().equals(cpf));
         if (existe) {
             throw new ClienteException("Já existe um cliente com este CPF.");
         }
