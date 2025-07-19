@@ -4,6 +4,7 @@ import model.Ingresso;
 import model.Usuario;
 import model.Venda;
 import service.AuthService;
+import service.FuncionarioService;
 import service.ProdutoService;
 import service.VendaService;
 import model.Filme;
@@ -30,6 +31,7 @@ public class Main {
     private final VendaService vendaService;
     private final RelatorioService relatorioService;
     private final AuthService authService;
+    private final FuncionarioService funcionarioService;
     private final Scanner scanner;
     private Usuario usuarioLogado;
 
@@ -47,6 +49,7 @@ public class Main {
         this.vendaService = new VendaService(ingressoService, produtoService, clienteService);
         this.relatorioService = new RelatorioService(vendaService);
         this.authService = new AuthService(clienteService);
+        this.funcionarioService = new FuncionarioService();
         this.scanner = new Scanner(System.in);
         
         popularDadosIniciais();
@@ -303,8 +306,9 @@ public class Main {
             System.out.println("1 - Gerenciar Clientes");
             System.out.println("2 - Gerenciar Filmes");
             System.out.println("3 - Gerenciar Sessões");
-            System.out.println("4 - Gerar Relatórios");
-            System.out.println("5 - Validar QR Code de Ingresso");
+            System.out.println("4 - Gerenciar Funcionários");
+            System.out.println("5 - Gerar Relatórios");
+            System.out.println("6 - Validar QR Code de Ingresso");
             System.out.println("0 - Deslogar");
             System.out.print("Escolha uma opção: ");
             try {
@@ -315,8 +319,9 @@ public class Main {
                     case 1: gerenciarClientes(); break;
                     case 2: gerenciarFilmes(); break;
                     case 3: gerenciarSessoes(); break;
-                    case 4: gerarRelatorios(); break;
-                    case 5: validarIngresso(); break;
+                    case 4: gerenciarFuncionarios(); break;
+                    case 5: gerarRelatorios(); break;
+                    case 6: validarIngresso(); break;
                     case 0:
                         usuarioLogado = null;
                         break;
@@ -328,6 +333,52 @@ public class Main {
                 opcao = -1;
             }
         } while (opcao != 0);
+    }
+    
+    private void gerenciarFuncionarios() {
+        System.out.println("\n-- Gerenciar Funcionários --");
+        System.out.println("1 - Adicionar Funcionário");
+        System.out.println("2 - Listar Funcionários");
+        System.out.println("3 - Demitir Funcionário");
+        System.out.println("4 - Eleger Funcionário do Mês");
+        System.out.print("Escolha uma opção: ");
+        int opcao = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (opcao) {
+            case 1: {
+                System.out.print("Nome do funcionário: ");
+                String nome = scanner.nextLine();
+                System.out.print("Função do funcionário: ");
+                String funcao = scanner.nextLine();
+                funcionarioService.adicionar(nome, funcao);
+                break;
+            }
+            case 2: {
+                System.out.println("\n--- Lista de Funcionários ---");
+                funcionarioService.listar().forEach(System.out::println);
+                break;
+            }
+            case 3: {
+                System.out.print("ID do funcionário para demitir: ");
+                Long id = scanner.nextLong();
+                scanner.nextLine();
+                funcionarioService.demitir(id);
+                break;
+            }
+            case 4: {
+                System.out.println("\n--- Lista de Funcionários ---");
+                funcionarioService.listar().forEach(System.out::println);
+                System.out.print("Digite o ID do funcionário a ser eleito: ");
+                Long id = scanner.nextLong();
+                scanner.nextLine();
+                funcionarioService.elegerFuncionarioDoMes(id);
+                break;
+            }
+            default:
+                System.out.println("❌ Opção inválida.");
+                break;
+        }
     }
 
     private void cancelarIngresso() {
