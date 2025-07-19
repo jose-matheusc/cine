@@ -30,16 +30,21 @@ public class AdicionarClienteTela {
         Button btnSalvar = new Button("Salvar");
 
         btnSalvar.setOnAction(_ -> {
-            clienteService.adicionar(
-                    loginField.getText(),
-                    senhaField.getText(),
-                    nomeField.getText(),
-                    cpfField.getText(),
-                    emailField.getText(),
-                    telefoneField.getText()
-            );
-            stage.close();
+            try {
+                clienteService.adicionar(
+                        loginField.getText(),
+                        senhaField.getText(),
+                        nomeField.getText(),
+                        cpfField.getText(),
+                        emailField.getText(),
+                        telefoneField.getText()
+                );
+                stage.close();
+            } catch (Exception e) {
+                grid.add(new Label(e.getMessage()), 0, grid.getRowCount());
+            }
         });
+
 
         grid.add(new Label("Login:"), 0, 0);
         grid.add(loginField, 1, 0);

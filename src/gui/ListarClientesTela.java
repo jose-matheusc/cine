@@ -2,11 +2,14 @@ package gui;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import model.Cliente;
 import service.ClienteService;
@@ -15,9 +18,14 @@ public class ListarClientesTela {
 
     public static void exibir(ClienteService clienteService) {
         Stage stage = new Stage();
-        stage.setTitle("Lista de Clientes");
+        stage.setTitle("📋 Lista de Clientes");
+
+        Label titulo = new Label("Lista de Clientes Cadastrados");
+        titulo.setFont(new Font("Arial", 20));
+        titulo.setPadding(new Insets(10, 0, 10, 0));
 
         TableView<Cliente> tabela = new TableView<>();
+        tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Cliente, Long> colId = new TableColumn<>("ID");
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -39,9 +47,11 @@ public class ListarClientesTela {
         ObservableList<Cliente> dados = FXCollections.observableArrayList(clienteService.carregarClientesDoArquivo());
         tabela.setItems(dados);
 
-        VBox layout = new VBox(tabela);
-        Scene cena = new Scene(layout, 600, 400);
+        VBox layout = new VBox(10, titulo, tabela);
+        layout.setPadding(new Insets(20));
+        layout.setStyle("-fx-background-color: #f9f9f9;");
 
+        Scene cena = new Scene(layout, 700, 450);
         stage.setScene(cena);
         stage.show();
     }
