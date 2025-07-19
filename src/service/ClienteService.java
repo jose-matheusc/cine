@@ -47,7 +47,7 @@ public class ClienteService {
         }
     }
 
-    private List<Cliente> carregarClientesDoArquivo() {
+    public List<Cliente> carregarClientesDoArquivo() {
         if (!arquivo.exists()) {
             return new ArrayList<>();
         }
@@ -56,11 +56,6 @@ public class ClienteService {
         } catch (IOException e) {
             throw new RuntimeException("Erro ao carregar clientes do arquivo: " + e.getMessage());
         }
-    }
-
-
-    public List<Cliente> listar() {
-        return carregarClientesDoArquivo();
     }
 
     public Cliente buscarPorId(Long id) {

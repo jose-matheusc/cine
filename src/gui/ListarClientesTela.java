@@ -36,7 +36,7 @@ public class ListarClientesTela {
 
         tabela.getColumns().addAll(colId, colNome, colCpf, colEmail, colTelefone);
 
-        ObservableList<Cliente> dados = FXCollections.observableArrayList(clienteService.listar());
+        ObservableList<Cliente> dados = FXCollections.observableArrayList(clienteService.carregarClientesDoArquivo());
         tabela.setItems(dados);
 
         VBox layout = new VBox(tabela);
