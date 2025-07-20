@@ -48,7 +48,7 @@ public class Main {
                     System.out.print("Telefone: ");
                     String telefone = scanner.nextLine();
 
-//                    clienteService.adicionar(login, senha, nome, cpf, email, telefone);
+                    clienteService.adicionar(login, senha, nome, cpf, email, telefone);
                     System.out.println("Cliente adicionado com sucesso.");
                     System.out.printf(getOpcao());
                 }
