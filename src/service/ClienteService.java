@@ -35,10 +35,9 @@ public class ClienteService {
         Cliente cliente = new Cliente(proximoId++, nome, cpf, email, telefone, idade);
         clientes.add(cliente);
         salvar();
-        System.out.println("✅ Cliente adicionado com sucesso.");
     }
 
-    public List<Cliente> listar() {
+    public List<Cliente> carregarClientesDoArquivo() {
         return clientes;
     }
 

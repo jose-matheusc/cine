@@ -20,24 +20,22 @@ public class AdicionarClienteTela {
         grid.setVgap(8);
         grid.setHgap(10);
 
-        TextField loginField = new TextField();
-        TextField senhaField = new TextField();
         TextField nomeField = new TextField();
         TextField cpfField = new TextField();
         TextField emailField = new TextField();
         TextField telefoneField = new TextField();
+        TextField idadeField = new TextField();
 
         Button btnSalvar = new Button("Salvar");
 
         btnSalvar.setOnAction(_ -> {
             try {
                 clienteService.adicionar(
-                        loginField.getText(),
-                        senhaField.getText(),
                         nomeField.getText(),
                         cpfField.getText(),
                         emailField.getText(),
-                        telefoneField.getText()
+                        telefoneField.getText(),
+                        Integer.parseInt(idadeField.getText())
                 );
                 stage.close();
             } catch (Exception e) {
@@ -45,20 +43,17 @@ public class AdicionarClienteTela {
             }
         });
 
-
-        grid.add(new Label("Login:"), 0, 0);
-        grid.add(loginField, 1, 0);
-        grid.add(new Label("Senha:"), 0, 1);
-        grid.add(senhaField, 1, 1);
-        grid.add(new Label("Nome:"), 0, 2);
-        grid.add(nomeField, 1, 2);
-        grid.add(new Label("CPF:"), 0, 3);
-        grid.add(cpfField, 1, 3);
-        grid.add(new Label("Email:"), 0, 4);
-        grid.add(emailField, 1, 4);
-        grid.add(new Label("Telefone:"), 0, 5);
-        grid.add(telefoneField, 1, 5);
-        grid.add(btnSalvar, 1, 6);
+        grid.add(new Label("Nome:"), 0, 0);
+        grid.add(nomeField, 1, 0);
+        grid.add(new Label("CPF (será a senha):"), 0, 1);
+        grid.add(cpfField, 1, 1);
+        grid.add(new Label("Email (será o login):"), 0, 2);
+        grid.add(emailField, 1, 2);
+        grid.add(new Label("Telefone:"), 0, 3);
+        grid.add(telefoneField, 1, 3);
+        grid.add(new Label("Idade:"), 0, 4);
+        grid.add(idadeField, 1, 4);
+        grid.add(btnSalvar, 1, 5);
 
         Scene cena = new Scene(grid, 350, 300);
         stage.setScene(cena);
