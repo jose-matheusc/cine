@@ -1,9 +1,12 @@
 package service;
 
+import model.Cliente;
 import model.Ingresso;
 import model.Produto;
+import model.Sessao;
 import model.Venda;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,9 +14,11 @@ import java.util.stream.Collectors;
 public class RelatorioService {
 
     private final VendaService vendaService;
+    private final IngressoService ingressoService;
 
-    public RelatorioService(VendaService vendaService) {
+    public RelatorioService(VendaService vendaService, IngressoService ingressoService) {
         this.vendaService = vendaService;
+        this.ingressoService = ingressoService;
     }
 
     public void gerarRelatorioVendasPorFilme() {
@@ -32,6 +37,52 @@ public class RelatorioService {
                     " | Receita: R$ " + String.format("%.2f", receita)
             );
         });
+    }
+    
+    public void gerarRelatorioOcupacaoDasSalas() {
+        System.out.println("\n--- Relatório de Ocupação por Sessão ---");
+        List<Sessao> sessoes = ingressoService.listarSessoes();
+
+        if (sessoes.isEmpty()) {
+            System.out.println("Nenhuma sessão cadastrada para gerar relatório.");
+            return;
+        }
+
+        sessoes.forEach(sessao -> {
+            long ingressosVendidos = vendaService.listarVendas().stream()
+                .flatMap(venda -> venda.getIngressos().stream())
+                .filter(ingresso -> ingresso.getSessao().getId().equals(sessao.getId()))
+                .count();
+            
+            double capacidade = sessao.getSala().getCapacidade();
+            double ocupacao = (ingressosVendidos / capacidade) * 100;
+
+            System.out.println(
+                "Sessão ID: " + sessao.getId() + 
+                " | Filme: " + sessao.getFilme().getTitulo() + 
+                " | Sala: " + sessao.getSala().getNome() +
+                " | Ingressos: " + ingressosVendidos + "/" + (int)capacidade +
+                " (" + String.format("%.1f", ocupacao) + "%)"
+            );
+        });
+    }
+    
+    public void gerarRelatorioClientesFrequentes() {
+        System.out.println("\n--- Relatório de Clientes Frequentes ---");
+        
+        Map<String, Long> comprasPorCliente = vendaService.listarVendas().stream()
+            .collect(Collectors.groupingBy(venda -> venda.getCliente().getNome(), Collectors.counting()));
+            
+        if (comprasPorCliente.isEmpty()) {
+            System.out.println("Nenhuma venda registrada para gerar relatório.");
+            return;
+        }
+
+        comprasPorCliente.entrySet().stream()
+            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+            .forEach(entry -> {
+                System.out.println("Cliente: " + entry.getKey() + " | Total de Compras: " + entry.getValue());
+            });
     }
 
     public void gerarRelatorioVendasDeProdutos() {
