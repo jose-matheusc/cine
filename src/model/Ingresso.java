@@ -1,83 +1,72 @@
 package model;
 
-import java.time.LocalDateTime;
-
 public class Ingresso {
     private Long id;
-    private String filme;
-    private LocalDateTime horarioSessao;
+    private Sessao sessao;
     private String assento;
     private boolean meiaEntrada;
     private String documentoMeiaEntrada;
+    private double valor;
+    private String qrCode;
     private boolean cancelado = false;
-
-    public Ingresso(Long id, String filme, LocalDateTime horarioSessao, String assento, boolean meiaEntrada, String documentoMeiaEntrada, boolean cancelado) {
-        this.id = id;
-        this.filme = filme;
-        this.horarioSessao = horarioSessao;
-        this.assento = assento;
-        this.meiaEntrada = meiaEntrada;
-        this.documentoMeiaEntrada = documentoMeiaEntrada;
-        this.cancelado = cancelado;
-    }
-
-    public Ingresso() {
-
-    }
 
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
-
-    public String getFilme() {
-        return filme;
+    public Sessao getSessao() {
+        return sessao;
     }
-
-    public void setFilme(String filme) {
-        this.filme = filme;
+    public void setSessao(Sessao sessao) {
+        this.sessao = sessao;
     }
-
-    public LocalDateTime getHorarioSessao() {
-        return horarioSessao;
-    }
-
-    public void setHorarioSessao(LocalDateTime horarioSessao) {
-        this.horarioSessao = horarioSessao;
-    }
-
     public String getAssento() {
         return assento;
     }
-
     public void setAssento(String assento) {
         this.assento = assento;
     }
-
     public boolean isMeiaEntrada() {
         return meiaEntrada;
     }
-
     public void setMeiaEntrada(boolean meiaEntrada) {
         this.meiaEntrada = meiaEntrada;
     }
-
     public String getDocumentoMeiaEntrada() {
         return documentoMeiaEntrada;
     }
-
     public void setDocumentoMeiaEntrada(String documentoMeiaEntrada) {
         this.documentoMeiaEntrada = documentoMeiaEntrada;
     }
-
+    public double getValor() {
+        return valor;
+    }
+    public void setValor(double valor) {
+        this.valor = valor;
+    }
     public boolean isCancelado() {
         return cancelado;
     }
-
     public void setCancelado(boolean cancelado) {
         this.cancelado = cancelado;
+    }
+    public String getQrCode() {
+        return qrCode;
+    }
+    public void setQrCode(String qrCode) {
+        this.qrCode = qrCode;
+    }
+
+    @Override
+    public String toString() {
+        return "Ingresso [" +
+               "ID=" + id +
+               ", Filme=" + sessao.getFilme().getTitulo() +
+               ", Assento='" + assento + '\'' +
+               ", Valor=R$ " + String.format("%.2f", valor) +
+               ", QRCode='" + qrCode + '\'' +
+               ']';
     }
 }

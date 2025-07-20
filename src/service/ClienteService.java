@@ -1,65 +1,49 @@
 package service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.reflect.TypeToken;
 import exception.ClienteException;
 import model.Cliente;
-
-import java.io.File;
-import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClienteService {
 
-    private Integer proximoId = 1;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final File arquivo = new File("src/repository/Cliente.json");
+    private static final String NOME_ARQUIVO = "clientes.json";
+    private List<Cliente> clientes;
+    private Long proximoId = 1L;
+    
+    public ClienteService() {
+        Type tipoLista = new TypeToken<ArrayList<Cliente>>() {}.getType();
+        this.clientes = PersistenceService.carregarDados(NOME_ARQUIVO, tipoLista);
+        atualizarProximoId();
+    }
 
-    private List<Cliente> pegarClientes() {
-        try {
-            return objectMapper.readValue(arquivo, new TypeReference<List<Cliente>>() {});
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private void salvar() {
+        PersistenceService.salvarDados(NOME_ARQUIVO, clientes);
+    }
+
+    private void atualizarProximoId() {
+        if (!clientes.isEmpty()) {
+            proximoId = clientes.stream().mapToLong(Cliente::getId).max().orElse(0L) + 1;
         }
     }
 
-
-    public void adicionar(String nome, String cpf, String email, String telefone, String login, String senha) {
+    public void adicionar(String nome, String cpf, String email, String telefone, int idade) {
         validarCamposObrigatorios(nome, cpf, email, telefone);
         verificarCpfDuplicado(cpf);
-        try {
-            List<Cliente> clientes = pegarClientes();
-            Long idUltimoCliente = clientes.getLast().getId();
-            Cliente cliente = new Cliente(login, senha, ++idUltimoCliente, nome, cpf, email, telefone);
-            clientes.add(cliente);
-            salvarClientesEmArquivo(clientes);
-        } catch (Exception e) {
-            throw new ClienteException("Erro ao adicionar cliente: " + e.getMessage());
-        }
+        Cliente cliente = new Cliente(proximoId++, nome, cpf, email, telefone, idade);
+        clientes.add(cliente);
+        salvar();
+        System.out.println("✅ Cliente adicionado com sucesso.");
     }
 
-    private void salvarClientesEmArquivo(List<Cliente> clientes) {
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(arquivo, clientes);
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar clientes no arquivo: " + e.getMessage());
-        }
-    }
-
-    public List<Cliente> carregarClientesDoArquivo() {
-        if (!arquivo.exists()) {
-            return new ArrayList<>();
-        }
-        try {
-            return objectMapper.readValue(arquivo, new TypeReference<List<Cliente>>() {});
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao carregar clientes do arquivo: " + e.getMessage());
-        }
+    public List<Cliente> listar() {
+        return clientes;
     }
 
     public Cliente buscarPorId(Long id) {
-        return pegarClientes().stream()
+        return clientes.stream()
                 .filter(c -> c.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new ClienteException("Cliente não encontrado."));
@@ -72,37 +56,26 @@ public class ClienteService {
         cliente.setCpf(cpf);
         cliente.setEmail(email);
         cliente.setTelefone(telefone);
+        salvar();
+        System.out.println("✅ Cliente atualizado com sucesso.");
     }
-
 
     public void excluir(Long id) {
-        Cliente cliente = buscarPorId(id);
-        pegarClientes().remove(cliente);
+        clientes.remove(buscarPorId(id));
+        salvar();
+        System.out.println("✅ Cliente excluído com sucesso.");
     }
 
-
-    private void validarCamposObrigatorios(String nome, String cpf, String email, String telefone) {
-        if (nome == null || nome.isBlank()) {
-            throw new ClienteException("Nome é obrigatório.");
-        }
-        if (cpf == null || cpf.isBlank()) {
-            throw new ClienteException("CPF é obrigatório.");
-        }
-        if (email == null || email.isBlank()) {
-            throw new ClienteException("Email é obrigatório.");
-        }
-        if (telefone == null || telefone.isBlank()) {
-            throw new ClienteException("Telefone é obrigatório.");
+    private void validarCamposObrigatorios(String n, String c, String e, String t) {
+        if (n == null || n.isBlank() || c == null || c.isBlank() || e == null || e.isBlank() || t == null || t.isBlank()) {
+            throw new ClienteException("Todos os campos são obrigatórios.");
         }
     }
 
     private void verificarCpfDuplicado(String cpf) {
-        boolean existe = pegarClientes().stream().anyMatch(c -> c.getCpf().equals(cpf));
+        boolean existe = clientes.stream().anyMatch(c -> c.getCpf().equals(cpf));
         if (existe) {
             throw new ClienteException("Já existe um cliente com este CPF.");
         }
     }
-
-
-
 }
