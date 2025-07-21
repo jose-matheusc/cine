@@ -1,0 +1,25 @@
+[ {
+  "login" : "s",
+  "senha" : "asa",
+  "id" : 1,
+  "nome" : "sqas2d",
+  "cpf" : "sqa",
+  "email" : "s",
+  "telefone" : "sa"
+}, {
+  "login" : "oi",
+  "senha" : "oi",
+  "id" : 2,
+  "nome" : "oi2",
+  "cpf" : "oi",
+  "email" : "oi",
+  "telefone" : "oi2"
+}, {
+  "login" : "aa",
+  "senha" : "a",
+  "id" : 5,
+  "nome" : "a",
+  "cpf" : "a",
+  "email" : "a",
+  "telefone" : "aa"
+} ]
