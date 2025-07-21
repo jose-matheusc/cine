@@ -33,4 +33,16 @@ public class Sessao {
                 ", horário=" + horario +
                 '}';
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setFilme(Filme filme) {
+        this.filme = filme;
+    }
+
+    public void setHorario(LocalDateTime horario) {
+        this.horario = horario;
+    }
 }

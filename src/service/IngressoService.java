@@ -1,103 +1,55 @@
 package service;
 
-import exception.IngressoException;
-import model.Filme;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import model.Ingresso;
-import model.Sessao;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
-import java.time.LocalDateTime;
 
 public class IngressoService {
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final File arquivo = new File("src/repository/Ingressos.json");
 
-    private final List<Ingresso> ingressos = new ArrayList<>();
-    private Long proximoId = 1L;
-    private final List<Filme> filmes = new ArrayList<>();
-    private final List<Sessao> sessoes = new ArrayList<>();
-    private Long proximoFilmeId = 1L;
-    private Long proximaSessaoId = 1L;
-
-    public Ingresso comprarIngresso(String filme, LocalDateTime horarioSessao, String assento, boolean meiaEntrada, String documento) {
-        if (filme == null || filme.isBlank()) {
-            throw new IngressoException("Filme não pode ser vazio.");
-        }
-
-        if (assento == null || assento.isBlank()) {
-            throw new IngressoException("Assento deve ser selecionado.");
-        }
-
-        if (meiaEntrada && (documento == null || documento.isBlank())) {
-            throw new IngressoException("Documento obrigatório para meia-entrada.");
-        }
-
-        boolean assentoOcupado = ingressos.stream()
-                .anyMatch(i -> i.getAssento().equals(assento) && i.getHorarioSessao().equals(horarioSessao) && !i.isCancelado());
-
-        if (assentoOcupado) {
-            throw new IngressoException("Assento já está ocupado.");
-        }
-
-        Ingresso ingresso = new Ingresso();
-        ingresso.setId(proximoId++);
-        ingresso.setFilme(filme);
-        ingresso.setHorarioSessao(horarioSessao);
-        ingresso.setAssento(assento);
-        ingresso.setMeiaEntrada(meiaEntrada);
-        ingresso.setDocumentoMeiaEntrada(documento);
-
+    public void adicionar(Ingresso ingresso) {
+        List<Ingresso> ingressos = listar();
+        long novoId = ingressos.stream().mapToLong(Ingresso::getId).max().orElse(0) + 1;
+        ingresso.setId(novoId);
         ingressos.add(ingresso);
-
-        return ingresso;
+        salvar(ingressos);
     }
 
-    public void cancelarIngresso(Long ingressoId) {
-        Ingresso ingresso = ingressos.stream()
-                .filter(i -> i.getId().equals(ingressoId))
-                .findFirst()
-                .orElseThrow(() -> new IngressoException("Ingresso não encontrado."));
-
-        if (ingresso.isCancelado()) {
-            throw new IngressoException("Ingresso já está cancelado.");
+    public boolean excluir(Long id) {
+        List<Ingresso> ingressos = listar();
+        boolean removido = ingressos.removeIf(i -> i.getId().equals(id));
+        if (removido) {
+            salvar(ingressos);
         }
+        return removido;
+    }
 
-        LocalDateTime agora = LocalDateTime.now();
-        if (agora.isAfter(ingresso.getHorarioSessao().minusHours(2))) {
-            throw new IngressoException("Cancelamento só é permitido até 2 horas antes da sessão.");
+
+    public List<Ingresso> listar() {
+        try {
+            if (!arquivo.exists()) return new ArrayList<>();
+            return Arrays.asList(objectMapper.readValue(arquivo, Ingresso[].class));
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao ler ingressos: " + e.getMessage());
         }
-
-        ingresso.setCancelado(true);
-        System.out.println("Ingresso cancelado. Reembolso processado.");
     }
 
-    public Filme cadastrarFilme(String titulo) {
-        Filme filme = new Filme(proximoFilmeId++, titulo);
-        filmes.add(filme);
-        return filme;
+    public boolean cancelar(Long id) {
+        List<Ingresso> ingressos = listar();
+        boolean removido = ingressos.removeIf(i -> i.getId().equals(id));
+        if (removido) salvar(ingressos);
+        return removido;
     }
 
-    public Sessao cadastrarSessao(Long filmeId, LocalDateTime horario) {
-        Filme filme = filmes.stream()
-                .filter(f -> f.getId().equals(filmeId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Filme não encontrado."));
-
-        Sessao sessao = new Sessao(proximaSessaoId++, filme, horario);
-        sessoes.add(sessao);
-        return sessao;
-    }
-
-    public List<Filme> listarFilmes() {
-        return filmes;
-    }
-
-    public List<Sessao> listarSessoes() {
-        return sessoes;
-    }
-
-    public Sessao buscarSessaoPorId(Long id) {
-        return sessoes.stream()
-                .filter(s -> s.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Sessão não encontrada."));
+    private void salvar(List<Ingresso> ingressos) {
+        try {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(arquivo, ingressos);
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar ingressos: " + e.getMessage());
+        }
     }
 }

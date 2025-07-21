@@ -1,7 +1,6 @@
 package service;
 
-import gui.AdicionarClienteTela;
-import gui.ListarClientesTela;
+import gui.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,6 +12,8 @@ import javafx.stage.Stage;
 public class App extends Application {
 
     private final ClienteService clienteService = new ClienteService();
+    private final FilmeService filmeService = new FilmeService();
+    private final SessaoService sessaoService = new SessaoService();
     private final IngressoService ingressoService = new IngressoService();
 
     @Override
@@ -29,21 +30,61 @@ public class App extends Application {
         Button btnListarClientes = new Button("📄 Listar Clientes");
         Button btnAtualizarCliente = new Button("✏ Atualizar Cliente");
         Button btnExcluirCliente = new Button("🗑 Excluir Cliente");
-        Button btnComprarIngresso = new Button("🎟 Comprar Ingresso");
-        Button btnCancelarIngresso = new Button("❌ Cancelar Ingresso");
+
+        Button btnAdicionarFilme = new Button("🎬 Adicionar Filme");
+        Button btnListarFilmes = new Button("📽 Listar Filmes");
+
         Button btnCadastrarSessao = new Button("🕒 Cadastrar Sessão");
         Button btnListarSessoes = new Button("📅 Listar Sessões");
+
+        Button btnComprarIngresso = new Button("🎟 Comprar Ingresso");
+        Button btnCancelarIngresso = new Button("❌ Cancelar Ingresso");
+
         Button btnSair = new Button("🚪 Sair");
 
         for (Button btn : new Button[]{
                 btnAdicionarCliente, btnListarClientes, btnAtualizarCliente, btnExcluirCliente,
-                btnComprarIngresso, btnCancelarIngresso, btnCadastrarSessao, btnListarSessoes, btnSair
+                btnAdicionarFilme, btnListarFilmes,
+                btnCadastrarSessao, btnListarSessoes,
+                btnComprarIngresso, btnCancelarIngresso,
+                btnSair
         }) {
             btn.setStyle(estiloBotao);
         }
 
         btnAdicionarCliente.setOnAction(e -> AdicionarClienteTela.exibir(clienteService));
         btnListarClientes.setOnAction(e -> ListarClientesTela.exibir(clienteService));
+        btnAtualizarCliente.setOnAction(e -> AtualizarClienteTela.exibir(clienteService));
+        btnExcluirCliente.setOnAction(e -> ExcluirClienteTela.exibir(clienteService));
+
+        btnAdicionarFilme.setOnAction(e -> {
+            AdicionarFilmeTela.exibir(filmeService);
+        });
+
+        btnListarFilmes.setOnAction(e -> {
+            ListarFilmesTela.exibir(filmeService);
+        });
+
+
+        btnAdicionarFilme.setOnAction(e -> {
+            AdicionarFilmeTela.exibir(filmeService);
+        });
+
+
+        btnListarSessoes.setOnAction(e -> {
+            sessaoService.listar().forEach(System.out::println);
+        });
+
+        btnComprarIngresso.setOnAction(e -> {
+            ingressoService.adicionar(new model.Ingresso(null, "Filme Exemplo", java.time.LocalDateTime.now(), "A1", false, null, false));
+            System.out.println("Ingresso comprado.");
+        });
+
+        btnCancelarIngresso.setOnAction(e -> {
+            boolean cancelado = ingressoService.excluir(1L);
+            System.out.println(cancelado ? "Ingresso cancelado." : "Ingresso não encontrado.");
+        });
+
         btnSair.setOnAction(e -> primaryStage.close());
 
         menuLayout.getChildren().addAll(
@@ -51,14 +92,16 @@ public class App extends Application {
                 btnListarClientes,
                 btnAtualizarCliente,
                 btnExcluirCliente,
-                btnComprarIngresso,
-                btnCancelarIngresso,
+                btnAdicionarFilme,
+                btnListarFilmes,
                 btnCadastrarSessao,
                 btnListarSessoes,
+                btnComprarIngresso,
+                btnCancelarIngresso,
                 btnSair
         );
 
-        Scene cena = new Scene(menuLayout, 350, 500);
+        Scene cena = new Scene(menuLayout, 350, 600);
         primaryStage.setTitle("🎬 Sistema de Cinema");
         primaryStage.setScene(cena);
         primaryStage.show();

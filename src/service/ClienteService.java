@@ -24,6 +24,35 @@ public class ClienteService {
         }
     }
 
+    public Cliente buscarPorId(Long id) {
+        return pegarClientes().stream().filter(c -> c.getId().equals(id)).findFirst().orElse(null);
+    }
+
+    public void atualizarCliente(Long id, String nome, String cpf, String email, String telefone) {
+        List<Cliente> clientes = pegarClientes();
+        Cliente cliente = clientes.stream()
+                .filter(c -> c.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ClienteException("Cliente não encontrado"));
+
+        cliente.setNome(nome);
+        cliente.setCpf(cpf);
+        cliente.setEmail(email);
+        cliente.setTelefone(telefone);
+
+        salvarClientesEmArquivo(clientes);
+    }
+
+
+    public boolean excluirPorId(Long id) {
+        List<Cliente> clientes = pegarClientes();
+        boolean removido = clientes.removeIf(c -> c.getId().equals(id));
+        if (removido) {
+            salvarClientesEmArquivo(clientes);
+        }
+        return removido;
+    }
+
 
     public void adicionar(String nome, String cpf, String email, String telefone, String login, String senha) {
         validarCamposObrigatorios(nome, cpf, email, telefone);
@@ -56,13 +85,6 @@ public class ClienteService {
         } catch (IOException e) {
             throw new RuntimeException("Erro ao carregar clientes do arquivo: " + e.getMessage());
         }
-    }
-
-    public Cliente buscarPorId(Long id) {
-        return pegarClientes().stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new ClienteException("Cliente não encontrado."));
     }
 
     public void atualizar(Long id, String nome, String cpf, String email, String telefone) {
