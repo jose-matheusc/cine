@@ -71,19 +71,21 @@ public class App extends Application {
         });
 
 
-        btnListarSessoes.setOnAction(e -> {
-            sessaoService.listar().forEach(System.out::println);
+        btnListarSessoes.setOnAction(e -> ListarSessoesTela.exibir(sessaoService));
+
+
+        btnCadastrarSessao.setOnAction(e -> {
+            AdicionarSessaoTela.exibir(sessaoService, filmeService);
         });
 
         btnComprarIngresso.setOnAction(e -> {
-            ingressoService.adicionar(new model.Ingresso(null, "Filme Exemplo", java.time.LocalDateTime.now(), "A1", false, null, false));
-            System.out.println("Ingresso comprado.");
+            ComprarIngressoTela.exibir(ingressoService, sessaoService);
         });
 
         btnCancelarIngresso.setOnAction(e -> {
-            boolean cancelado = ingressoService.excluir(1L);
-            System.out.println(cancelado ? "Ingresso cancelado." : "Ingresso não encontrado.");
+            CancelarIngressoTela.exibir(ingressoService);
         });
+
 
         btnSair.setOnAction(e -> primaryStage.close());
 

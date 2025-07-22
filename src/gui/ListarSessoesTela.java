@@ -2,53 +2,58 @@ package gui;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Sessao;
 import service.SessaoService;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class ListarSessoesTela {
 
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
     public static void exibir(SessaoService sessaoService) {
         Stage stage = new Stage();
-        stage.setTitle("🎟️ Lista de Sessões");
+        stage.setTitle("Lista de Sessões");
 
-        Label titulo = new Label("Sessões de Cinema");
-
-        TableView<Sessao> tabela = new TableView<>();
-        tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        TableView<Sessao> table = new TableView<>();
 
         TableColumn<Sessao, Long> colId = new TableColumn<>("ID");
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colId.setCellValueFactory(data -> new javafx.beans.property.SimpleLongProperty(
+                data.getValue().getId() != null ? data.getValue().getId() : 0L).asObject());
 
-        TableColumn<Sessao, String> colFilme = new TableColumn<>("Filme");
-        colFilme.setCellValueFactory(celula -> javafx.beans.binding.Bindings.createStringBinding(() ->
-                celula.getValue().getFilme().getTitulo()
-        ));
+        TableColumn<Sessao, String> colTitulo = new TableColumn<>("Filme");
+        colTitulo.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(
+                data.getValue().getFilme().getTitulo()));
+
+        TableColumn<Sessao, String> colGenero = new TableColumn<>("Gênero");
+        colGenero.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(
+                data.getValue().getFilme().getGenero()));
+
+        TableColumn<Sessao, Integer> colDuracao = new TableColumn<>("Duração (min)");
+        colDuracao.setCellValueFactory(data -> new javafx.beans.property.SimpleIntegerProperty(
+                data.getValue().getFilme().getDuracao()).asObject());
 
         TableColumn<Sessao, String> colHorario = new TableColumn<>("Horário");
-        colHorario.setCellValueFactory(celula -> javafx.beans.binding.Bindings.createStringBinding(() ->
-                celula.getValue().getHorario().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
-        ));
+        colHorario.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(
+                data.getValue().getHorario().format(FORMATTER)));
 
-        tabela.getColumns().addAll(colId, colFilme, colHorario);
+        table.getColumns().addAll(colId, colTitulo, colGenero, colDuracao, colHorario);
 
-        ObservableList<Sessao> dados = FXCollections.observableArrayList(sessaoService.listar());
-        tabela.setItems(dados);
+        List<Sessao> sessoes = sessaoService.listar();
+        ObservableList<Sessao> observableList = FXCollections.observableArrayList(sessoes);
+        table.setItems(observableList);
 
-        VBox layout = new VBox(10, titulo, tabela);
-        layout.setPadding(new Insets(20));
+        VBox layout = new VBox(10);
+        layout.setPadding(new javafx.geometry.Insets(10));
+        layout.getChildren().addAll(new Label("Sessões Cadastradas"), table);
 
-        Scene cena = new Scene(layout, 500, 300);
-        stage.setScene(cena);
+        Scene scene = new Scene(layout, 600, 400);
+        stage.setScene(scene);
         stage.show();
     }
 }

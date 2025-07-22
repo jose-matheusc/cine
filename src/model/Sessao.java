@@ -7,6 +7,10 @@ public class Sessao {
     private Filme filme;
     private LocalDateTime horario;
 
+
+    public Sessao() {
+    }
+
     public Sessao(Long id, Filme filme, LocalDateTime horario) {
         this.id = id;
         this.filme = filme;

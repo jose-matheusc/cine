@@ -1,6 +1,8 @@
 package service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import model.Sessao;
 
 import java.io.File;
@@ -10,6 +12,11 @@ import java.util.*;
 public class SessaoService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final File arquivo = new File("src/repository/Sessoes.json");
+
+    public SessaoService() {
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
 
     public void adicionar(Sessao sessao) {
         List<Sessao> sessoes = listar();
@@ -21,7 +28,9 @@ public class SessaoService {
 
     public List<Sessao> listar() {
         try {
-            if (!arquivo.exists()) return new ArrayList<>();
+            if (!arquivo.exists() || arquivo.length() == 0) {
+                return new ArrayList<>();
+            }
             return Arrays.asList(objectMapper.readValue(arquivo, Sessao[].class));
         } catch (IOException e) {
             throw new RuntimeException("Erro ao ler sessões: " + e.getMessage());
