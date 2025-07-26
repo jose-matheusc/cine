@@ -29,8 +29,12 @@ public class AdicionarSessaoTela {
         List<Filme> filmes = filmeService.listar();
         cbFilmes.getItems().addAll(filmes);
 
-        TextField horarioField = new TextField();
-        horarioField.setPromptText("Data e hora (ex: 2025-08-10 19:30)");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String horarioPadrao = LocalDateTime.now().plusHours(1).format(formatter);
+
+        TextField horarioField = new TextField(horarioPadrao);
+        horarioField.setPromptText("Ex: 2025-08-10 19:30");
+
 
         Button btnSalvar = new Button("Salvar");
 

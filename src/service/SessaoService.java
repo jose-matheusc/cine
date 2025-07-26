@@ -31,11 +31,12 @@ public class SessaoService {
             if (!arquivo.exists() || arquivo.length() == 0) {
                 return new ArrayList<>();
             }
-            return Arrays.asList(objectMapper.readValue(arquivo, Sessao[].class));
+            return new ArrayList<>(Arrays.asList(objectMapper.readValue(arquivo, Sessao[].class)));
         } catch (IOException e) {
             throw new RuntimeException("Erro ao ler sessões: " + e.getMessage());
         }
     }
+
 
     public void atualizar(Sessao sessaoAtualizada) {
         List<Sessao> sessoes = listar();
