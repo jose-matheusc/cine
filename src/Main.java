@@ -1,25 +1,24 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Scanner;
+
 import model.Administrador;
 import model.Cliente;
+import model.Filme;
 import model.Ingresso;
+import model.Sessao;
 import model.Usuario;
 import model.Venda;
 import service.AuthService;
-import service.FuncionarioService;
-import service.ProdutoService;
-import service.VendaService;
-import model.Filme;
-import model.Sessao;
 import service.ClienteService;
 import service.FilmeService;
+import service.FuncionarioService;
 import service.IngressoService;
+import service.ProdutoService;
 import service.RelatorioService;
 import service.SalaService;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Scanner;
+import service.VendaService;
 
 public class Main {
 
@@ -98,19 +97,13 @@ public class Main {
         scanner.nextLine();
 
         switch (opcao) {
-            case 1:
-                fazerLogin();
-                break;
-            case 2:
-                criarContaCliente();
-                break;
-            case 0:
+            case 1 -> fazerLogin();
+            case 2 -> criarContaCliente();
+            case 0 -> {
                 System.out.println("Saindo...");
                 System.exit(0);
-                break;
-            default:
-                System.out.println("❌ Opção inválida.");
-                break;
+            }
+            default -> System.out.println("❌ Opção inválida.");
         }
     }
 
@@ -161,18 +154,10 @@ public class Main {
                 scanner.nextLine();
 
                 switch (opcao) {
-                    case 1:
-                        menuCartaz();
-                        break;
-                    case 2:
-                        cancelarIngresso();
-                        break;
-                    case 0:
-                        usuarioLogado = null;
-                        break;
-                    default:
-                        System.out.println("❌ Opção inválida.");
-                        break;
+                    case 1 -> menuCartaz();
+                    case 2 -> cancelarIngresso();
+                    case 0 -> usuarioLogado = null;
+                    default -> System.out.println("❌ Opção inválida.");
                 }
             } catch (Exception e) {
                 System.out.println("❌ Entrada inválida. Por favor, digite um número.");
@@ -195,7 +180,7 @@ public class Main {
         }
 
         try {
-            Long filmeId = Long.parseLong(escolha);
+            Long filmeId = Long.valueOf(escolha);
             detalhesFilmeECompra(filmeId);
         } catch (NumberFormatException e) {
             System.out.println("❌ Opção inválida.");
