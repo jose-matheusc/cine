@@ -104,16 +104,16 @@ public class ClienteService {
 
 
     private void validarCamposObrigatorios(String nome, String cpf, String email, String telefone) {
-        if (nome == null || nome.isBlank()) {
+        if (nome.isBlank()) {
             throw new ClienteException("Nome é obrigatório.");
         }
-        if (cpf == null || cpf.isBlank()) {
+        if (cpf.isBlank()) {
             throw new ClienteException("CPF é obrigatório.");
         }
-        if (email == null || email.isBlank()) {
+        if (email.isBlank()) {
             throw new ClienteException("Email é obrigatório.");
         }
-        if (telefone == null || telefone.isBlank()) {
+        if (telefone.isBlank()) {
             throw new ClienteException("Telefone é obrigatório.");
         }
     }

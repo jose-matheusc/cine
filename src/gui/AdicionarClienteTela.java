@@ -32,12 +32,12 @@ public class AdicionarClienteTela {
         btnSalvar.setOnAction(_ -> {
             try {
                 clienteService.adicionar(
-                        loginField.getText(),
-                        senhaField.getText(),
                         nomeField.getText(),
                         cpfField.getText(),
                         emailField.getText(),
-                        telefoneField.getText()
+                        telefoneField.getText(),
+                        loginField.getText(),
+                        senhaField.getText()
                 );
                 stage.close();
             } catch (Exception e) {
