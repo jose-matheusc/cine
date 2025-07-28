@@ -46,7 +46,7 @@ public class Main {
         this.ingressoService = new IngressoService(filmeService, salaService);
         this.produtoService = new ProdutoService();
         this.vendaService = new VendaService(ingressoService, produtoService, clienteService);
-        this.relatorioService = new RelatorioService(vendaService);
+        this.relatorioService = new RelatorioService(vendaService, ingressoService);
         this.authService = new AuthService(clienteService);
         this.funcionarioService = new FuncionarioService();
         this.scanner = new Scanner(System.in);
@@ -97,13 +97,19 @@ public class Main {
         scanner.nextLine();
 
         switch (opcao) {
-            case 1 -> fazerLogin();
-            case 2 -> criarContaCliente();
-            case 0 -> {
+            case 1:
+                fazerLogin();
+                break;
+            case 2:
+                criarContaCliente();
+                break;
+            case 0:
                 System.out.println("Saindo...");
                 System.exit(0);
-            }
-            default -> System.out.println("❌ Opção inválida.");
+                break;
+            default:
+                System.out.println("❌ Opção inválida.");
+                break;
         }
     }
 
@@ -154,10 +160,18 @@ public class Main {
                 scanner.nextLine();
 
                 switch (opcao) {
-                    case 1 -> menuCartaz();
-                    case 2 -> cancelarIngresso();
-                    case 0 -> usuarioLogado = null;
-                    default -> System.out.println("❌ Opção inválida.");
+                    case 1:
+                        menuCartaz();
+                        break;
+                    case 2:
+                        cancelarIngresso();
+                        break;
+                    case 0:
+                        usuarioLogado = null;
+                        break;
+                    default:
+                        System.out.println("❌ Opção inválida.");
+                        break;
                 }
             } catch (Exception e) {
                 System.out.println("❌ Entrada inválida. Por favor, digite um número.");
@@ -180,7 +194,7 @@ public class Main {
         }
 
         try {
-            Long filmeId = Long.valueOf(escolha);
+            Long filmeId = Long.parseLong(escolha);
             detalhesFilmeECompra(filmeId);
         } catch (NumberFormatException e) {
             System.out.println("❌ Opção inválida.");
@@ -557,6 +571,8 @@ public class Main {
         System.out.println("1 - Relatório de Vendas por Filme");
         System.out.println("2 - Relatório de Vendas de Produtos");
         System.out.println("3 - Relatório de Receita Total");
+        System.out.println("4 - Relatório de Ocupação das Salas");
+        System.out.println("5 - Relatório de Clientes Frequentes");
         System.out.print("Escolha um relatório para gerar: ");
         int opcao = scanner.nextInt();
         scanner.nextLine();
@@ -570,6 +586,12 @@ public class Main {
                 break;
             case 3:
                 relatorioService.gerarRelatorioReceitaTotal();
+                break;
+            case 4:
+                relatorioService.gerarRelatorioOcupacaoDasSalas();
+                break;
+            case 5:
+                relatorioService.gerarRelatorioClientesFrequentes();
                 break;
             default:
                 System.out.println("❌ Opção inválida.");
