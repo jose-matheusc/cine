@@ -1,35 +1,24 @@
 package service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import exception.ClienteException;
 import model.Cliente;
+import repository.ClienteRepository;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ClienteService {
 
-    private Integer proximoId = 1;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final File arquivo = new File("src/repository/Cliente.json");
-
-    private List<Cliente> pegarClientes() {
-        try {
-            return objectMapper.readValue(arquivo, new TypeReference<List<Cliente>>() {});
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private final ClienteRepository repository = new ClienteRepository();
 
     public Cliente buscarPorId(Long id) {
-        return pegarClientes().stream().filter(c -> c.getId().equals(id)).findFirst().orElse(null);
+        return repository.listar().stream()
+                .filter(c -> c.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
     public void atualizarCliente(Long id, String nome, String cpf, String email, String telefone) {
-        List<Cliente> clientes = pegarClientes();
+        List<Cliente> clientes = repository.listar();
         Cliente cliente = clientes.stream()
                 .filter(c -> c.getId().equals(id))
                 .findFirst()
@@ -40,51 +29,31 @@ public class ClienteService {
         cliente.setEmail(email);
         cliente.setTelefone(telefone);
 
-        salvarClientesEmArquivo(clientes);
+        repository.salvar(clientes);
     }
 
-
     public boolean excluirPorId(Long id) {
-        List<Cliente> clientes = pegarClientes();
+        List<Cliente> clientes = repository.listar();
         boolean removido = clientes.removeIf(c -> c.getId().equals(id));
         if (removido) {
-            salvarClientesEmArquivo(clientes);
+            repository.salvar(clientes);
         }
         return removido;
     }
 
-
     public void adicionar(String nome, String cpf, String email, String telefone, String login, String senha) {
         validarCamposObrigatorios(nome, cpf, email, telefone);
         verificarCpfDuplicado(cpf);
-        try {
-            List<Cliente> clientes = pegarClientes();
-            Long idUltimoCliente = clientes.getLast().getId();
-            Cliente cliente = new Cliente(login, senha, ++idUltimoCliente, nome, cpf, email, telefone);
-            clientes.add(cliente);
-            salvarClientesEmArquivo(clientes);
-        } catch (Exception e) {
-            throw new ClienteException("Erro ao adicionar cliente: " + e.getMessage());
-        }
-    }
 
-    private void salvarClientesEmArquivo(List<Cliente> clientes) {
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(arquivo, clientes);
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar clientes no arquivo: " + e.getMessage());
-        }
+        List<Cliente> clientes = repository.listar();
+        Long novoId = clientes.isEmpty() ? 1L : clientes.getLast().getId() + 1;
+        Cliente cliente = new Cliente(login, senha, novoId, nome, cpf, email, telefone);
+        clientes.add(cliente);
+        repository.salvar(clientes);
     }
 
     public List<Cliente> carregarClientesDoArquivo() {
-        if (!arquivo.exists()) {
-            return new ArrayList<>();
-        }
-        try {
-            return objectMapper.readValue(arquivo, new TypeReference<List<Cliente>>() {});
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao carregar clientes do arquivo: " + e.getMessage());
-        }
+        return repository.listar();
     }
 
     public void atualizar(Long id, String nome, String cpf, String email, String telefone) {
@@ -94,37 +63,32 @@ public class ClienteService {
         cliente.setCpf(cpf);
         cliente.setEmail(email);
         cliente.setTelefone(telefone);
-    }
 
+        List<Cliente> clientes = repository.listar();
+        for (int i = 0; i < clientes.size(); i++) {
+            if (clientes.get(i).getId().equals(id)) {
+                clientes.set(i, cliente);
+                repository.salvar(clientes);
+                return;
+            }
+        }
+    }
 
     public void excluir(Long id) {
-        Cliente cliente = buscarPorId(id);
-        pegarClientes().remove(cliente);
+        List<Cliente> clientes = repository.listar();
+        clientes.removeIf(c -> c.getId().equals(id));
+        repository.salvar(clientes);
     }
 
-
     private void validarCamposObrigatorios(String nome, String cpf, String email, String telefone) {
-        if (nome.isBlank()) {
-            throw new ClienteException("Nome é obrigatório.");
-        }
-        if (cpf.isBlank()) {
-            throw new ClienteException("CPF é obrigatório.");
-        }
-        if (email.isBlank()) {
-            throw new ClienteException("Email é obrigatório.");
-        }
-        if (telefone.isBlank()) {
-            throw new ClienteException("Telefone é obrigatório.");
-        }
+        if (nome.isBlank()) throw new ClienteException("Nome é obrigatório.");
+        if (cpf.isBlank()) throw new ClienteException("CPF é obrigatório.");
+        if (email.isBlank()) throw new ClienteException("Email é obrigatório.");
+        if (telefone.isBlank()) throw new ClienteException("Telefone é obrigatório.");
     }
 
     private void verificarCpfDuplicado(String cpf) {
-        boolean existe = pegarClientes().stream().anyMatch(c -> c.getCpf().equals(cpf));
-        if (existe) {
-            throw new ClienteException("Já existe um cliente com este CPF.");
-        }
+        boolean existe = repository.listar().stream().anyMatch(c -> c.getCpf().equals(cpf));
+        if (existe) throw new ClienteException("Já existe um cliente com este CPF.");
     }
-
-
-
 }

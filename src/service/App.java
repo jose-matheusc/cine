@@ -40,13 +40,15 @@ public class App extends Application {
         Button btnComprarIngresso = new Button("🎟 Comprar Ingresso");
         Button btnCancelarIngresso = new Button("❌ Cancelar Ingresso");
 
+        Button btnListarIngresso = new Button("📅 Listar Ingressos");
+
         Button btnSair = new Button("🚪 Sair");
 
         for (Button btn : new Button[]{
                 btnAdicionarCliente, btnListarClientes, btnAtualizarCliente, btnExcluirCliente,
                 btnAdicionarFilme, btnListarFilmes,
                 btnCadastrarSessao, btnListarSessoes,
-                btnComprarIngresso, btnCancelarIngresso,
+                btnComprarIngresso, btnCancelarIngresso, btnListarIngresso,
                 btnSair
         }) {
             btn.setStyle(estiloBotao);
@@ -86,6 +88,10 @@ public class App extends Application {
             CancelarIngressoTela.exibir(ingressoService);
         });
 
+        btnListarIngresso.setOnAction(e -> {
+            ListarIngressosTela.exibir(ingressoService);
+        });
+
 
         btnSair.setOnAction(e -> primaryStage.close());
 
@@ -100,6 +106,7 @@ public class App extends Application {
                 btnListarSessoes,
                 btnComprarIngresso,
                 btnCancelarIngresso,
+                btnListarIngresso,
                 btnSair
         );
 

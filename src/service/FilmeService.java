@@ -1,30 +1,28 @@
 package service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import model.Filme;
+import repository.FilmeRepository;
 
-import java.io.*;
-import java.util.*;
+import java.util.List;
 
 public class FilmeService {
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final File arquivo = new File("src/repository/Filmes.json");
+
+    private final FilmeRepository repository = new FilmeRepository();
 
     public void adicionar(Filme filme) {
-        List<Filme> filmes = listar();
+        List<Filme> filmes = repository.listar();
         long novoId = filmes.stream().mapToLong(Filme::getId).max().orElse(0) + 1;
         filme.setId(novoId);
         filmes.add(filme);
-        salvar(filmes);
+        repository.salvar(filmes);
     }
 
     public void atualizar(Filme filmeAtualizado) {
-        List<Filme> filmes = listar();
+        List<Filme> filmes = repository.listar();
         for (int i = 0; i < filmes.size(); i++) {
             if (filmes.get(i).getId().equals(filmeAtualizado.getId())) {
                 filmes.set(i, filmeAtualizado);
-                salvar(filmes);
+                repository.salvar(filmes);
                 return;
             }
         }
@@ -32,27 +30,22 @@ public class FilmeService {
     }
 
     public boolean excluir(Long id) {
-        List<Filme> filmes = listar();
+        List<Filme> filmes = repository.listar();
         boolean removido = filmes.removeIf(f -> f.getId().equals(id));
-        if (removido) salvar(filmes);
+        if (removido) {
+            repository.salvar(filmes);
+        }
         return removido;
     }
 
-    private void salvar(List<Filme> filmes) {
-        try (Writer writer = new FileWriter(arquivo)) {
-            objectMapper.writeValue(writer, filmes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public List<Filme> listar() {
-        try (Reader reader = new FileReader(arquivo)) {
-            return objectMapper.readValue(reader, new TypeReference<List<Filme>>() {});
-        } catch (IOException e) {
-            return new ArrayList<>();
-        }
+        return repository.listar();
     }
 
-
+    public Filme buscarPorId(Long id) {
+        return repository.listar().stream()
+                .filter(f -> f.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
 }
